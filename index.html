@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>仁心养生行 · 出入库管理</title>
+<style>
+:root{--bg:#fdf8f0;--card:#fff;--ink:#2b1d12;--muted:#8a755f;--line:#e9ddd0;--brand:#8b1a1a;--brand2:#c1440e;--ok:#1a7a3a;--warn:#b7790e;--danger:#9b2226;--radius:14px;--shadow:0 6px 24px rgba(43,29,18,.08)}
+*{box-sizing:border-box}body{margin:0;font-family:"Noto Serif SC","PingFang SC","Microsoft YaHei",serif;background:var(--bg);color:var(--ink)}
+header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,#fff 70%,#fff8 100%);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hdr{max-width:1280px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{width:44px;height:44px;border-radius:10px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:900;letter-spacing:1px;border:2px solid #5a0f0f}
+.hdr h1{margin:0;font-size:20px;letter-spacing:2px}
+.hdr small{color:var(--muted);font-size:12px;letter-spacing:1px}
+.hdr .spacer{flex:1}
+.badge{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:12px;color:var(--muted)}
+.btn{appearance:none;border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn-ok{background:var(--ok);color:#fff}
+.btn-warn{background:var(--brand2);color:#fff}
+.wrap{max-width:1280px;margin:18px auto;padding:0 20px 40px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.stat{padding:16px}
+.stat .k{font-size:12px;color:var(--muted);letter-spacing:1px}
+.stat .v{font-size:26px;font-weight:900;margin:6px 0}
+.stat .sub{font-size:12px;color:var(--muted)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}
+.input,select{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;outline:none}
+.input:focus,select:focus{border-color:#c9a87a;box-shadow:0 0 0 3px #f3e6d3}
+.layout{display:grid;grid-template-columns:1.65fr .9fr;gap:16px}
+@media(max-width:1050px){.layout{grid-template-columns:1fr}}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{position:sticky;top:0;background:#fdf2e2;z-index:1;text-align:left;padding:10px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid #f0e6d8;vertical-align:middle}
+.stock{font-weight:800}
+.pill{padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid transparent}
+.pill-ok{background:#e8f5e9;color:#1a7a3a;border-color:#c8e6c9}
+.pill-warn{background:#fff3e0;color:#b7790e;border-color:#ffe0b2}
+.pill-danger{background:#fdecea;color:#9b2226;border-color:#f5c6cb}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.mini{padding:6px 10px;border-radius:8px;font-size:12px}
+.right{padding:16px;position:sticky;top:84px;align-self:start}
+.right h3{margin:4px 0 10px;font-size:15px}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kv .card{padding:12px}
+.log{max-height:420px;overflow:auto}
+.log-item{padding:10px 12px;border-bottom:1px dashed #eee;display:flex;gap:10px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot.in{background:var(--ok)} .dot.out{background:var(--danger)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.38);display:none;place-items:center;padding:18px;z-index:50}
+.modal.open{display:grid}
+.sheet{width:min(560px,100%);background:#fff;border-radius:16px;border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden}
+.sheet header{position:static;background:#fff}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}}
+.hint{font-size:12px;color:var(--muted)}
+.divider{height:1px;background:var(--line);margin:12px 0}
+.chip{padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr">
+    <div class="logo">仁心</div>
+    <div>
+      <h1>仁心养生行 · 出入库管理</h1>
+      <small>现货 · 免硫 · 欢迎自取 — 19味精选药材台账</small>
+    </div>
+    <div class="spacer"></div>
+    <span class="badge" id="todayBadge"></span>
+    <button class="btn btn-ghost" onclick="exportCSV()">导出流水 CSV</button>
+    <button class="btn btn-ghost" onclick="exportJSON()">备份 JSON</button>
+    <label class="btn btn-ghost" style="cursor:pointer">导入备份<input type="file" id="importFile" accept=".json" hidden></label>
+    <button class="btn btn-primary" onclick="openModal('in')">+ 入库</button>
+    <button class="btn btn-warn" onclick="openModal('out')">- 出库</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="stats">
+    <div class="card stat"><div class="k">总 SKU</div><div class="v" id="sSku">19</div><div class="sub">在售药材种类</div></div>
+    <div class="card stat"><div class="k">总库存</div><div class="v" id="sStock">—</div><div class="sub" id="sStockSub">磅</div></div>
+    <div class="card stat"><div class="k">低库存预警</div><div class="v" id="sLow" style="color:var(--warn)">—</div><div class="sub">阈值 ≤5 磅</div></div>
+    <div class="card stat"><div class="k">今日流水</div><div class="v" id="sToday">—</div><div class="sub" id="sTodaySub">入库 / 出库</div></div>
+  </div>
+
+  <div class="toolbar">
+    <input id="q" class="input" placeholder="搜索 药材名 / 功效 / 分类" style="min-width:240px" oninput="render()">
+    <select id="cat" onchange="render()"><option value="">全部分类</option></select>
+    <select id="stockFilter" onchange="render()"><option value="">全部库存</option><option value="low">仅低库存</option><option value="out">已售罄</option></select>
+    <span class="hint">点击行可快捷出入库 · 数据本地保存（localStorage）</span>
+    <span style="flex:1"></span>
+    <button class="btn btn-ghost" onclick="resetDemo()">重置演示库存</button>
+  </div>
+
+  <div class="layout">
+    <div class="card" style="overflow:hidden">
+      <div style="padding:12px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <strong>库存总览</strong><span class="chip" id="countChip">19 项</span>
+        <span style="flex:1"></span><span class="hint">双击数量可手调 · 出库不可超库存</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>药材</th><th>分类</th><th>售价</th><th>库存</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card right">
+      <h3>今日流水（最近10条）</h3>
+      <div id="recent" class="log"></div>
+      <div class="divider"></div>
+      <h3>快捷统计</h3>
+      <div class="kv">
+        <div class="card"><div class="hint">最畅销（30天）</div><div id="topSeller" style="font-weight:800;margin-top:6px">—</div></div>
+        <div class="card"><div class="hint">最常补货</div><div id="topRestock" style="font-weight:800;margin-top:6px">—</div></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn btn-ghost" style="flex:1" onclick="openHistory()">查看完整流水 →</button>
+      </div>
+      <div class="hint" style="margin-top:10px">提示：出库自动扣减，入库自动增加，阈值可在行内手调。</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;overflow:hidden" id="historyCard">
+    <div style="padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <strong>流水记录</strong>
+      <select id="hType" onchange="renderHistory()"><option value="">全部类型</option><option value="in">入库</option><option value="out">出库</option></select>
+      <input id="hQ" class="input" placeholder="筛选 药材/备注/操作人" oninput="renderHistory()">
+      <input id="hDate" type="date" class="input" onchange="renderHistory()">
+      <span style="flex:1"></span>
+      <button class="btn btn-ghost" onclick="clearHistory()">清空流水</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>时间</th><th>类型</th><th>药材</th><th>数量</th><th>结存</th><th>单价</th><th>小计</th><th>操作人</th><th>备注</th></tr></thead>
+        <tbody id="htbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="hint" style="margin-top:10px">© 仁心养生行 · 本页数据仅保存在本机浏览器，换设备请用“备份 JSON”迁移。支持打印与 CSV 对账。</div>
+</div>
+
+<div id="modal" class="modal" onclick="if(event.target===this)closeModal()">
+  <div class="sheet">
+    <header style="padding:14px 16px;display:flex;align-items:center;gap:10px">
+      <strong id="mTitle">入库</strong><span class="hint" id="mHint">增加库存</span><span style="flex:1"></span><button class="btn btn-ghost" onclick="closeModal()">✕</button>
+    </header>
+    <div style="padding:16px">
+      <div class="grid2">
+        <label>药材<select id="mProduct"></select></label>
+        <label>数量（磅）<input id="mQty" type="number" step="0.5" min="0.5" class="input" placeholder="例如 5"></label>
+        <label>单价（$/磅）<input id="mPrice" type="number" step="0.01" class="input" placeholder="自动带入售价"></label>
+        <label>操作人<input id="mOp" class="input" placeholder="例如 店长 / 小李" value="店长"></label>
+      </div>
+      <label style="display:block;margin-top:10px">备注<input id="mNote" class="input" style="width:100%" placeholder="供应商 / 客户 / 批次 等"></label>
+      <div class="hint" id="mStockHint" style="margin-top:8px"></div>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button id="mSubmit" class="btn btn-primary" style="flex:1" onclick="submitModal()">确认入库</button>
+        <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEFAULT_PRODUCTS=[{"id":"p1","name":"大号枸杞子","price":15,"unit":"磅","category":"补益明目","tag":"热销爆款","benefit":"滋补肝肾、益精明目"},{"id":"p2","name":"孢子头虫草花","price":15,"unit":"磅","category":"滋补炖汤","tag":"优质头茬","benefit":"增强免疫"},{"id":"p3","name":"大号龙牙百合","price":18,"unit":"磅","category":"润肺安神","tag":"特级无硫","benefit":"润肺止咳"},{"id":"p4","name":"茯苓中心丁","price":13,"unit":"磅","category":"健脾祛湿","tag":"无硫优选","benefit":"健脾渗湿"},{"id":"p5","name":"大片玉竹","price":17,"unit":"磅","category":"养阴生津","tag":"高品质","benefit":"养阴润燥"},{"id":"p6","name":"粉葛根片","price":15,"unit":"磅","category":"健脾祛湿","tag":"买2磅立省","deal":"$28 / 2磅","benefit":"生津止渴"},{"id":"p7","name":"粉质土茯苓","price":15,"unit":"磅","category":"健脾祛湿","tag":"买2磅立省","benefit":"解毒利湿"},{"id":"p8","name":"平阴玫瑰花","price":20,"unit":"磅","category":"养颜茶饮","tag":"特级花蕾","benefit":"行气解郁"},{"id":"p9","name":"甘肃党参","price":25,"unit":"磅","category":"补气养血","tag":"正宗甘肃","benefit":"补中益气"},{"id":"p10","name":"桂圆肉","price":15,"unit":"磅","category":"补血安神","tag":"买2磅立省","benefit":"补益心脾"},{"id":"p11","name":"山楂中心圈","price":10,"unit":"磅","category":"消食开胃","tag":"无核圈","benefit":"消食健胃"},{"id":"p12","name":"铁棍山药片","price":13,"unit":"磅","category":"健脾补肾","tag":"正宗铁棍","benefit":"益气养阴"},{"id":"p13","name":"无花果","price":12,"unit":"磅","category":"润肺生津","tag":"清甜无硫","benefit":"润肺止咳"},{"id":"p14","name":"五指毛桃扎","price":18,"unit":"磅","category":"健脾祛湿","tag":"买2磅立省","benefit":"健脾补肺"},{"id":"p15","name":"原切片黄芪","price":16,"unit":"磅","category":"补气固表","tag":"大片优选","benefit":"补气升阳"},{"id":"p16","name":"正宗白莲子","price":15,"unit":"磅","category":"健脾安神","tag":"建莲品质","benefit":"补脾止泻"},{"id":"p17","name":"中大桑葚","price":10,"unit":"磅","category":"补血滋阴","tag":"买2磅立省","benefit":"补血滋阴"},{"id":"p18","name":"大号开边芡实","price":12,"unit":"磅","category":"健脾固肾","tag":"开边大粒","benefit":"益肾固精"},{"id":"p19","name":"太子参","price":25,"unit":"磅","category":"补气生津","tag":"清补不燥","benefit":"益气健脾"}];
+const LS_P='renxin_products_v2', LS_T='renxin_tx_v2';
+let products=[], tx=[];
+let mode='in';
+function load(){
+  const p=localStorage.getItem(LS_P), t=localStorage.getItem(LS_T);
+  if(p){ try{products=JSON.parse(p)}catch(e){products=[]} } 
+  if(!products.length){
+    products=DEFAULT_PRODUCTS.map(pr=>({...pr, stock: Math.round(8+Math.random()*18), low:5 }));
+    saveProducts();
+    // seed a few tx
+    const now=Date.now();
+    tx=[
+      {id:'t1',ts:now-86400000*2,type:'in',pid:'p1',pname:'大号枸杞子',qty:20,price:12,total:240,after:28,op:'店长',note:'首批到货'},
+      {id:'t2',ts:now-86400000*1.5,type:'out',pid:'p1',pname:'大号枸杞子',qty:2,price:15,total:30,after:26,op:'店长',note:'零售'},
+      {id:'t3',ts:now-86400000*1,type:'out',pid:'p8',pname:'平阴玫瑰花',qty:1,price:20,total:20,after:11,op:'小李',note:'微信客'},
+      {id:'t4',ts:now-3600000*5,type:'in',pid:'p14',pname:'五指毛桃扎',qty:10,price:14,total:140,after:22,op:'店长',note:'补货'},
+    ];
+    saveTx();
+  }
+  if(t){ try{tx=JSON.parse(t)}catch(e){} }
+}
+function saveProducts(){localStorage.setItem(LS_P, JSON.stringify(products))}
+function saveTx(){localStorage.setItem(LS_T, JSON.stringify(tx))}
+function init(){
+  load();
+  document.getElementById('todayBadge').textContent=new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+  const cats=[...new Set(products.map(p=>p.category))]; const sel=document.getElementById('cat');
+  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o)});
+  const mp=document.getElementById('mProduct');
+  products.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;mp.appendChild(o)});
+  document.getElementById('mProduct').addEventListener('change', syncPriceHint);
+  render(); renderHistory();
+  document.getElementById('importFile').addEventListener('change', onImport);
+}
+function syncPriceHint(){
+  const pid=document.getElementById('mProduct').value;
+  const pr=products.find(x=>x.id===pid);
+  if(!pr) return;
+  document.getElementById('mPrice').placeholder=pr.price;
+  document.getElementById('mStockHint').textContent=`当前库存：${pr.stock} ${pr.unit} · 阈值 ${pr.low}${pr.unit} · ${stockLabel(pr)}`;
+}
+function stockLabel(pr){
+  if(pr.stock<=0) return '已售罄';
+  if(pr.stock<=pr.low) return '低库存预警';
+  return '库存正常';
+}
+function stockPill(pr){
+  if(pr.stock<=0) return '<span class="pill pill-danger">售罄</span>';
+  if(pr.stock<=pr.low) return '<span class="pill pill-warn">低库存</span>';
+  return '<span class="pill pill-ok">正常</span>';
+}
+function render(){
+  const q=(document.getElementById('q').value||'').trim().toLowerCase();
+  const cat=document.getElementById('cat').value;
+  const sf=document.getElementById('stockFilter').value;
+  let list=[...products];
+  if(q) list=list.filter(p=>[p.name,p.benefit,p.category,p.tag].join(' ').toLowerCase().includes(q));
+  if(cat) list=list.filter(p=>p.category===cat);
+  if(sf==='low') list=list.filter(p=>p.stock>0 && p.stock<=p.low);
+  if(sf==='out') list=list.filter(p=>p.stock<=0);
+  document.getElementById('countChip').textContent=list.length+' 项';
+  const tb=document.getElementById('tbody'); tb.innerHTML='';
+  list.forEach(p=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><div style="font-weight:800">${p.name}</div><div class="hint">${p.benefit} · ${p.tag||''}</div></td>
+      <td><span class="chip">${p.category}</span></td>
+      <td>$${p.price}/${p.unit}</td>
+      <td><span class="stock" data-id="${p.id}" ondblclick="editStock('${p.id}')" title="双击手调库存">${p.stock}</span> ${p.unit}</td>
+      <td>${stockPill(p)} <span class="hint" style="margin-left:6px">阈${p.low}</span></td>
+      <td><div class="actions"><button class="btn btn-ok mini" onclick="quick('in','${p.id}')">入库</button><button class="btn btn-warn mini" onclick="quick('out','${p.id}')">出库</button><button class="btn btn-ghost mini" onclick="editLow('${p.id}')">阈值</button></div></td>`;
+    tr.addEventListener('click',e=>{if(e.target.tagName!=='BUTTON') quick('out',p.id)});
+    tb.appendChild(tr);
+  });
+  // stats
+  const total=list.reduce((s,p)=>s+p.stock,0); // show all, not filtered, for total?
+  const totalAll=products.reduce((s,p)=>s+p.stock,0);
+  document.getElementById('sStock').textContent=totalAll.toFixed(1);
+  document.getElementById('sStockSub').textContent='磅 · 19 SKU 合计';
+  const low=products.filter(p=>p.stock>0 && p.stock<=p.low).length;
+  document.getElementById('sLow').textContent=low;
+  const todayStr=new Date().toDateString();
+  const todayTx=tx.filter(x=>new Date(x.ts).toDateString()===todayStr);
+  const tin=todayTx.filter(x=>x.type==='in').reduce((s,x)=>s+x.qty,0);
+  const tout=todayTx.filter(x=>x.type==='out').reduce((s,x)=>s+x.qty,0);
+  document.getElementById('sToday').textContent=todayTx.length? `${tin.toFixed(1)} / ${tout.toFixed(1)}` : '0 / 0';
+  document.getElementById('sTodaySub').textContent='今日 入库 / 出库（磅）';
+  // recent & top
+  const recent=[...tx].sort((a,b)=>b.ts-a.ts).slice(0,10);
+  const rc=document.getElementById('recent'); rc.innerHTML= recent.length? '' : '<div class="hint" style="padding:12px">暂无流水</div>';
+  recent.forEach(r=>{
+    const d=document.createElement('div'); d.className='log-item';
+    d.innerHTML=`<span class="dot ${r.type}"></span><div style="flex:1"><div style="font-weight:700">${r.pname} <span class="hint">${r.type==='in'?'+':''}${r.type==='out'?'-':''}${r.qty}${products.find(p=>p.id===r.pid)?.unit||'磅'}</span></div><div class="hint">${new Date(r.ts).toLocaleString('zh-CN')} · ${r.op} · ${r.note||'—'}</div></div><span class="pill ${r.type==='in'?'pill-ok':'pill-danger'}">${r.type==='in'?'入库':'出库'}</span>`;
+    rc.appendChild(d);
+  });
+  const last30=Date.now()-30*86400000;
+  const out30=tx.filter(x=>x.type==='out' && x.ts>last30);
+  const by={}; out30.forEach(x=>by[x.pname]=(by[x.pname]||0)+x.qty);
+  const topO=Object.entries(by).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('topSeller').textContent=topO? `${topO[0]} · ${topO[1].toFixed(1)}磅` : '暂无';
+  const in30=tx.filter(x=>x.type==='in' && x.ts>last30);
+  const byI={}; in30.forEach(x=>byI[x.pname]=(byI[x.pname]||0)+x.qty);
+  const topI=Object.entries(byI).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('topRestock').textContent=topI? `${topI[0]} · ${topI[1].toFixed(1)}磅` : '暂无';
+}
+function quick(type,pid){
+  openModal(type,pid);
+}
+function openModal(type,pid){
+  mode=type;
+  const m=document.getElementById('modal');
+  document.getElementById('mTitle').textContent= type==='in'?'入库':'出库';
+  document.getElementById('mHint').textContent= type==='in'?'增加库存':'扣减库存';
+  document.getElementById('mSubmit').textContent= type==='in'?'确认入库':'确认出库';
+  document.getElementById('mSubmit').className= 'btn '+(type==='in'?'btn-ok':'btn-warn');
+  if(pid) document.getElementById('mProduct').value=pid;
+  document.getElementById('mQty').value='';
+  document.getElementById('mNote').value='';
+  document.getElementById('mPrice').value='';
+  syncPriceHint();
+  m.classList.add('open');
+  setTimeout(()=>document.getElementById('mQty').focus(),50);
+}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+function submitModal(){
+  const pid=document.getElementById('mProduct').value;
+  const qty=parseFloat(document.getElementById('mQty').value);
+  const price=parseFloat(document.getElementById('mPrice').value);
+  const op=document.getElementById('mOp').value.trim()||'店长';
+  const note=document.getElementById('mNote').value.trim();
+  const pr=products.find(p=>p.id===pid);
+  if(!pr) return alert('请选择药材');
+  if(!qty || qty<=0) return alert('请输入数量');
+  if(mode==='out' && qty>pr.stock) return alert(`库存不足：现存 ${pr.stock}${pr.unit}，无法出库 ${qty}${pr.unit}`);
+  const usePrice = isNaN(price)? pr.price : price;
+  const after = mode==='in'? pr.stock+qty : pr.stock-qty;
+  pr.stock= Math.round(after*10)/10;
+  saveProducts();
+  const rec={id:'t'+Date.now(),ts:Date.now(),type:mode,pid, pname:pr.name, qty, price:usePrice, total: Math.round(qty*usePrice*100)/100, after:pr.stock, op, note};
+  tx.push(rec); saveTx();
+  closeModal(); render(); renderHistory();
+}
+function editStock(pid){
+  const pr=products.find(p=>p.id===pid);
+  const v=prompt(`手调库存 — ${pr.name}（当前 ${pr.stock}${pr.unit}）\n输入新库存数量：`, pr.stock);
+  if(v===null) return;
+  const n=parseFloat(v); if(isNaN(n)||n<0) return alert('无效数量');
+  const diff=n-pr.stock;
+  pr.stock=Math.round(n*10)/10; saveProducts();
+  if(diff!==0){
+    tx.push({id:'t'+Date.now(),ts:Date.now(),type: diff>0?'in':'out', pid, pname:pr.name, qty:Math.abs(diff), price:pr.price, total:Math.round(Math.abs(diff)*pr.price*100)/100, after:pr.stock, op:'店长', note:'手调库存'});
+    saveTx();
+  }
+  render(); renderHistory();
+}
+function editLow(pid){
+  const pr=products.find(p=>p.id===pid);
+  const v=prompt(`设置低库存阈值 — ${pr.name}（当前 ${pr.low}${pr.unit}）`, pr.low);
+  if(v===null) return;
+  const n=parseFloat(v); if(isNaN(n)||n<0) return alert('无效阈值');
+  pr.low=n; saveProducts(); render();
+}
+function renderHistory(){
+  const type=document.getElementById('hType').value;
+  const q=(document.getElementById('hQ').value||'').toLowerCase();
+  const d=document.getElementById('hDate').value;
+  let list=[...tx].sort((a,b)=>b.ts-a.ts);
+  if(type) list=list.filter(x=>x.type===type);
+  if(q) list=list.filter(x=>[x.pname,x.note,x.op].join(' ').toLowerCase().includes(q));
+  if(d){ const ds=new Date(d).toDateString(); list=list.filter(x=>new Date(x.ts).toDateString()===ds); }
+  const tb=document.getElementById('htbody'); tb.innerHTML='';
+  if(!list.length){ tb.innerHTML='<tr><td colspan="9" class="hint" style="text-align:center;padding:18px">无记录</td></tr>'; return}
+  list.forEach(r=>{
+    const tr=document.createElement('tr');
+    const dt=new Date(r.ts).toLocaleString('zh-CN');
+    tr.innerHTML=`<td>${dt}</td><td><span class="pill ${r.type==='in'?'pill-ok':'pill-danger'}">${r.type==='in'?'入库':'出库'}</span></td><td style="font-weight:700">${r.pname}</td><td>${r.type==='out'?'-':'+'}${r.qty}</td><td>${r.after}</td><td>$${r.price}</td><td>$${r.total}</td><td>${r.op}</td><td class="hint">${r.note||'—'}</td>`;
+    tb.appendChild(tr);
+  });
+}
+function exportCSV(){
+  const header=['时间','类型','药材','数量','结存','单价','小计','操作人','备注'];
+  const rows=tx.map(r=>[new Date(r.ts).toLocaleString('zh-CN'), r.type==='in'?'入库':'出库', r.pname, r.qty, r.after, r.price, r.total, r.op, (r.note||'')]);
+  const csv=[header,...rows].map(a=>a.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='renxin_流水_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+}
+function exportJSON(){
+  const data={products, tx, exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='renxin_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+}
+function onImport(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(d.products && d.tx){ products=d.products; tx=d.tx; saveProducts(); saveTx(); render(); renderHistory(); alert('导入成功');}
+      else alert('文件格式不对');
+    }catch(err){alert('解析失败：'+err.message)}
+  };
+  r.readAsText(f); e.target.value='';
+}
+function clearHistory(){ if(!confirm('确定清空全部流水？库存不受影响。')) return; tx=[]; saveTx(); render(); renderHistory(); }
+function resetDemo(){ if(!confirm('重置为演示库存？会覆盖当前库存与流水。')) return; localStorage.removeItem(LS_P); localStorage.removeItem(LS_T); location.reload(); }
+function openHistory(){ document.getElementById('historyCard').scrollIntoView({behavior:'smooth'}); }
+init();
+</script>
+</body>
+</html>
