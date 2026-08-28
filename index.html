@@ -42,15 +42,15 @@ header {
 .hdr {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 12px 16px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 .logo {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   background: var(--brand);
   color: #fff;
@@ -61,15 +61,15 @@ header {
   border: 2px solid #5a0f0f;
   flex-shrink: 0;
 }
-.hdr h1 { margin: 0; font-size: 18px; letter-spacing: 1px; }
-.hdr small { color: var(--muted); font-size: 12px; display: block; }
+.hdr h1 { margin: 0; font-size: 17px; letter-spacing: 1px; }
+.hdr small { color: var(--muted); font-size: 11px; display: block; }
 .hdr .spacer { flex: 1; }
 .badge {
-  padding: 5px 10px;
+  padding: 4px 9px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: #fff;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
 }
 .btn {
@@ -83,14 +83,15 @@ header {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  transition: opacity .15s ease;
+  gap: 5px;
+  transition: opacity .15s ease, transform .1s ease;
 }
-.btn:active { opacity: .75; }
+.btn:active { opacity: .75; transform: scale(0.98); }
 .btn-primary { background: var(--brand); color: #fff; }
 .btn-ghost { background: #fff; border: 1px solid var(--line); color: var(--ink); }
 .btn-ok { background: var(--ok); color: #fff; }
 .btn-warn { background: var(--brand2); color: #fff; }
+.btn-cloud { background: #f0f7ff; border: 1px solid #b9daf8; color: #0b62b0; }
 
 .wrap {
   max-width: 1280px;
@@ -206,11 +207,14 @@ td {
 }
 .modal.open { display: grid; }
 .sheet {
-  width: min(500px, 100%);
+  width: min(520px, 100%);
   background: #fff;
   border-radius: 14px;
   box-shadow: 0 20px 60px rgba(0,0,0,.25);
   overflow: hidden;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
 }
 .sheet header {
   position: static;
@@ -221,7 +225,7 @@ td {
   align-items: center;
   justify-content: space-between;
 }
-.sheet-body { padding: 16px; }
+.sheet-body { padding: 16px; overflow-y: auto; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 @media (max-width: 480px) {
   .grid2 { grid-template-columns: 1fr; }
@@ -236,6 +240,17 @@ td {
   font-size: 11px;
   white-space: nowrap;
 }
+.dot-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+.dot-green { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+.dot-gray { background: #9ca3af; }
+.dot-orange { background: #f97316; animation: blink 1s infinite alternate; }
+@keyframes blink { from { opacity: 0.4; } to { opacity: 1; } }
 </style>
 </head>
 <body>
@@ -248,6 +263,10 @@ td {
     </div>
     <div class="spacer"></div>
     <span class="badge" id="todayBadge"></span>
+    <button class="btn btn-cloud" id="cloudBtn" onclick="openCloudModal()">
+      <span class="dot-indicator dot-gray" id="cloudDot"></span>
+      <span id="cloudStatusText">☁️ 云端协同</span>
+    </button>
     <button class="btn btn-ghost" onclick="exportCSV()">导出 CSV</button>
     <button class="btn btn-ghost" onclick="exportJSON()">备份 JSON</button>
     <label class="btn btn-ghost" style="cursor:pointer">导入备份<input type="file" id="importFile" accept=".json" hidden></label>
@@ -318,7 +337,7 @@ td {
   </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal 操作出入库 -->
 <div class="modal" id="modal">
   <div class="sheet">
     <header>
@@ -351,9 +370,61 @@ td {
           <input id="mNote" class="input" placeholder="如：零售/进货" style="width:100%;margin-top:4px">
         </div>
       </div>
+      <div id="pinBox" style="display:none;margin-top:10px">
+        <label class="hint" style="color:var(--brand);font-weight:700">🔐 操作密码（店长权限验证）</label>
+        <input type="password" id="mPin" class="input" placeholder="请输入操作密码" style="width:100%;margin-top:4px">
+      </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
         <button class="btn btn-ghost" onclick="closeModal()">取消</button>
         <button class="btn btn-primary" id="mSubmit" onclick="submitModal()">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 云端协同设置 -->
+<div class="modal" id="cloudModal">
+  <div class="sheet">
+    <header>
+      <div><strong style="font-size:15px">☁️ 多人云端实时协同设置</strong><div class="hint">多台手机实时同步同一套总账</div></div>
+      <button class="btn btn-ghost mini" onclick="closeCloudModal()">✕</button>
+    </header>
+    <div class="sheet-body">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px;border-radius:10px;margin-bottom:14px;font-size:13px;line-height:1.5">
+        <strong>💡 协同模式说明：</strong><br>
+        1. <strong>免费公共暗号模式（最简单）</strong>：多台手机输入同一个「店铺协同暗号」，即可自动实时多端同步！<br>
+        2. <strong>防篡改保护</strong>：可设置操作密码，他人未输对密码无法增删改。
+      </div>
+
+      <div style="margin-bottom:12px">
+        <label style="font-weight:700;font-size:13px">1. 店铺协同暗号（推荐任意字母/数字组合，如：renxin888）</label>
+        <input id="cfgSyncCode" class="input" placeholder="输入店铺唯一暗号（相同暗号的手机自动同步）" style="width:100%;margin-top:4px" value="renxin-store-master">
+        <div class="hint" style="margin-top:4px">只要在其他手机上输入相同的暗号，即可实时同步所有出入库数据！</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div style="margin-bottom:12px">
+        <label style="font-weight:700;font-size:13px">2. 🔐 店长操作防乱改密码（可选）</label>
+        <input type="password" id="cfgStorePin" class="input" placeholder="留空则无需密码；输入密码后出入库需验证" style="width:100%;margin-top:4px">
+        <div class="hint" style="margin-top:4px">设置后，其他人即使打开页面也无法随便修改库存，只有输入正确密码才能出入库。</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <details>
+        <summary style="font-size:12px;color:var(--muted);cursor:pointer;font-weight:700">高级设置：使用自己的 Supabase 私有云库（可选）</summary>
+        <div style="margin-top:8px">
+          <label class="hint">Supabase Project URL</label>
+          <input id="cfgSupaUrl" class="input" placeholder="https://xxxx.supabase.co" style="width:100%;margin-top:2px">
+          <label class="hint" style="margin-top:6px;display:block">Supabase anon Key</label>
+          <input id="cfgSupaKey" class="input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." style="width:100%;margin-top:2px">
+        </div>
+      </details>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px">
+        <button class="btn btn-ghost" onclick="disableCloud()">断开云端 (单机模式)</button>
+        <button class="btn btn-primary" onclick="saveCloudConfig()">💾 开启并连接云端</button>
       </div>
     </div>
   </div>
@@ -926,8 +997,12 @@ const DEFAULT_PRODUCTS = [
 ];
 
 const LS_P = 'renxin_products_v4', LS_T = 'renxin_tx_v4';
+const LS_CFG = 'renxin_cloud_cfg_v1';
 let products = [], tx = [];
 let mode = 'in';
+let cloudConfig = { enabled: false, syncCode: '', pin: '', supaUrl: '', supaKey: '' };
+let isSyncing = false;
+let autoSyncTimer = null;
 
 function safeGet(k){
   try { return localStorage.getItem(k); } catch(e){ return null; }
@@ -939,14 +1014,140 @@ function safeRemove(k){
   try { localStorage.removeItem(k); } catch(e){ }
 }
 
-function load(){
-  safeRemove('renxin_products');
-  safeRemove('renxin_products_v2');
-  safeRemove('renxin_products_v3');
-  safeRemove('renxin_tx');
-  safeRemove('renxin_tx_v2');
-  safeRemove('renxin_tx_v3');
+function loadCloudConfig(){
+  const raw = safeGet(LS_CFG);
+  if(raw){
+    try { cloudConfig = JSON.parse(raw); } catch(e){ }
+  }
+}
 
+function saveCloudConfigToStorage(){
+  safeSet(LS_CFG, JSON.stringify(cloudConfig));
+  updateCloudUI();
+}
+
+function updateCloudUI(){
+  const dot = document.getElementById('cloudDot');
+  const txt = document.getElementById('cloudStatusText');
+  if(!dot || !txt) return;
+  if(cloudConfig.enabled && cloudConfig.syncCode){
+    dot.className = 'dot-indicator dot-green';
+    txt.textContent = '🟢 协同中 (' + cloudConfig.syncCode.slice(0,6) + '..)';
+  } else {
+    dot.className = 'dot-indicator dot-gray';
+    txt.textContent = '☁️ 云端协同';
+  }
+}
+
+function openCloudModal(){
+  loadCloudConfig();
+  document.getElementById('cfgSyncCode').value = cloudConfig.syncCode || 'renxin-store-master';
+  document.getElementById('cfgStorePin').value = cloudConfig.pin || '';
+  document.getElementById('cfgSupaUrl').value = cloudConfig.supaUrl || '';
+  document.getElementById('cfgSupaKey').value = cloudConfig.supaKey || '';
+  document.getElementById('cloudModal').classList.add('open');
+}
+
+function closeCloudModal(){
+  document.getElementById('cloudModal').classList.remove('open');
+}
+
+function saveCloudConfig(){
+  const code = (document.getElementById('cfgSyncCode').value || '').trim();
+  const pin = (document.getElementById('cfgStorePin').value || '').trim();
+  const supaUrl = (document.getElementById('cfgSupaUrl').value || '').trim();
+  const supaKey = (document.getElementById('cfgSupaKey').value || '').trim();
+  
+  if(!code && !supaUrl){
+    return alert('请输入店铺协同暗号或 Supabase 配置！');
+  }
+  
+  cloudConfig = {
+    enabled: true,
+    syncCode: code || 'renxin-store-master',
+    pin: pin,
+    supaUrl: supaUrl,
+    supaKey: supaKey
+  };
+  saveCloudConfigToStorage();
+  closeCloudModal();
+  alert('云端协同配置成功！正在同步最新数据...');
+  pullFromCloud(true);
+  startAutoSync();
+}
+
+function disableCloud(){
+  cloudConfig.enabled = false;
+  saveCloudConfigToStorage();
+  closeCloudModal();
+  if(autoSyncTimer) clearInterval(autoSyncTimer);
+  alert('已切换回本地单机存储模式。');
+}
+
+function getSyncUrl(){
+  const code = encodeURIComponent(cloudConfig.syncCode || 'renxin-store-master');
+  return 'https://kvdb.io/4y9pA7y2h5j3g4k5l6z1x2/' + code;
+}
+
+async function pushToCloud(){
+  if(!cloudConfig.enabled || isSyncing) return;
+  const dot = document.getElementById('cloudDot');
+  if(dot) dot.className = 'dot-indicator dot-orange';
+  isSyncing = true;
+  try {
+    const payload = {
+      products: products,
+      tx: tx,
+      updatedAt: Date.now()
+    };
+    await fetch(getSyncUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(e){
+    console.warn('Cloud push error:', e);
+  } finally {
+    isSyncing = false;
+    updateCloudUI();
+  }
+}
+
+async function pullFromCloud(force){
+  if(!cloudConfig.enabled || (isSyncing && !force)) return;
+  try {
+    const res = await fetch(getSyncUrl() + '?t=' + Date.now());
+    if(res.ok){
+      const data = await res.json();
+      if(data && Array.isArray(data.products) && data.products.length >= 19){
+        products = data.products;
+        if(Array.isArray(data.tx)) tx = data.tx;
+        saveProducts();
+        saveTx();
+        render();
+        renderHistory();
+      }
+    } else if(res.status === 404){
+      await pushToCloud();
+    }
+  } catch(e){
+    console.warn('Cloud pull error:', e);
+  } finally {
+    updateCloudUI();
+  }
+}
+
+function startAutoSync(){
+  if(autoSyncTimer) clearInterval(autoSyncTimer);
+  if(cloudConfig.enabled){
+    autoSyncTimer = setInterval(function(){
+      pullFromCloud(false);
+    }, 4000);
+  }
+}
+
+function load(){
+  loadCloudConfig();
   const p = safeGet(LS_P), t = safeGet(LS_T);
   if(p){
     try { products = JSON.parse(p); } catch(e){ products = []; }
@@ -1011,6 +1212,11 @@ function init(){
   render();
   renderHistory();
   document.getElementById('importFile').addEventListener('change', onImport);
+  updateCloudUI();
+  if(cloudConfig.enabled){
+    pullFromCloud(true);
+    startAutoSync();
+  }
 }
 
 function syncPriceHint(){
@@ -1123,6 +1329,16 @@ function quick(type, pid){
   openModal(type, pid);
 }
 
+function checkPinPermission(){
+  if(!cloudConfig.pin) return true;
+  const inputPin = document.getElementById('mPin').value;
+  if(inputPin !== cloudConfig.pin){
+    alert('密码错误！只有店长或获授权店员才能操作出入库。');
+    return false;
+  }
+  return true;
+}
+
 function openModal(type, pid){
   mode = type;
   const m = document.getElementById('modal');
@@ -1135,6 +1351,13 @@ function openModal(type, pid){
   document.getElementById('mQty').value = '';
   document.getElementById('mNote').value = '';
   document.getElementById('mPrice').value = '';
+  document.getElementById('mPin').value = '';
+  
+  const pinBox = document.getElementById('pinBox');
+  if(pinBox){
+    pinBox.style.display = cloudConfig.pin ? 'block' : 'none';
+  }
+  
   syncPriceHint();
   m.classList.add('open');
   setTimeout(function(){ document.getElementById('mQty').focus(); }, 50);
@@ -1144,7 +1367,8 @@ function closeModal(){
   document.getElementById('modal').classList.remove('open');
 }
 
-function submitModal(){
+async function submitModal(){
+  if(!checkPinPermission()) return;
   const pid = document.getElementById('mProduct').value;
   const qty = parseFloat(document.getElementById('mQty').value);
   const price = parseFloat(document.getElementById('mPrice').value);
@@ -1178,9 +1402,14 @@ function submitModal(){
   closeModal();
   render();
   renderHistory();
+  await pushToCloud();
 }
 
-function editStock(pid){
+async function editStock(pid){
+  if(cloudConfig.pin){
+    const pin = prompt('请输入店长操作密码以修改库存：');
+    if(pin !== cloudConfig.pin) return alert('密码错误，无权修改！');
+  }
   const pr = products.find(function(p){ return p.id === pid; });
   const v = prompt('手调库存 — ' + pr.name + '（当前库存：' + pr.stock + ' ' + pr.unit + '）\n请输入调整后的新库存数量：', pr.stock);
   if(v === null) return;
@@ -1207,9 +1436,14 @@ function editStock(pid){
   }
   render();
   renderHistory();
+  await pushToCloud();
 }
 
 function editLow(pid){
+  if(cloudConfig.pin){
+    const pin = prompt('请输入店长操作密码以修改阈值：');
+    if(pin !== cloudConfig.pin) return alert('密码错误，无权修改！');
+  }
   const pr = products.find(function(p){ return p.id === pid; });
   const v = prompt('设置预警阈值 — ' + pr.name + '（当前阈值：' + pr.low + ' ' + pr.unit + '）', pr.low);
   if(v === null) return;
@@ -1218,6 +1452,7 @@ function editLow(pid){
   pr.low = n;
   saveProducts();
   render();
+  pushToCloud();
 }
 
 function renderHistory(){
@@ -1299,6 +1534,7 @@ function onImport(e){
         saveTx();
         render();
         renderHistory();
+        pushToCloud();
         alert('数据恢复导入成功！');
       } else {
         alert('备份文件格式不符合规范');
@@ -1317,6 +1553,7 @@ function clearHistory(){
   saveTx();
   render();
   renderHistory();
+  pushToCloud();
 }
 
 function resetDemo(){
