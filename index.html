@@ -68,7 +68,7 @@ td{padding:10px;border-bottom:1px solid #f0e6d8;vertical-align:middle}
     <div class="logo">仁心</div>
     <div>
       <h1>仁心养生行 · 出入库管理</h1>
-      <small>现货 · 免硫 · 欢迎自取 — 19味精选药材台账</small>
+      <small>现货 · 免硫 · 欢迎自取 — 51味精选道地药材台账</small>
     </div>
     <div class="spacer"></div>
     <span class="badge" id="todayBadge"></span>
@@ -82,7 +82,7 @@ td{padding:10px;border-bottom:1px solid #f0e6d8;vertical-align:middle}
 
 <div class="wrap">
   <div class="stats">
-    <div class="card stat"><div class="k">总 SKU</div><div class="v" id="sSku">19</div><div class="sub">在售药材种类</div></div>
+    <div class="card stat"><div class="k">总 SKU</div><div class="v" id="sSku">51</div><div class="sub">在售药材种类</div></div>
     <div class="card stat"><div class="k">总库存</div><div class="v" id="sStock">—</div><div class="sub" id="sStockSub">磅</div></div>
     <div class="card stat"><div class="k">低库存预警</div><div class="v" id="sLow" style="color:var(--warn)">—</div><div class="sub">阈值 ≤5 磅</div></div>
     <div class="card stat"><div class="k">今日流水</div><div class="v" id="sToday">—</div><div class="sub" id="sTodaySub">入库 / 出库</div></div>
@@ -100,7 +100,7 @@ td{padding:10px;border-bottom:1px solid #f0e6d8;vertical-align:middle}
   <div class="layout">
     <div class="card" style="overflow:hidden">
       <div style="padding:12px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <strong>库存总览</strong><span class="chip" id="countChip">19 项</span>
+        <strong>库存总览</strong><span class="chip" id="countChip">51 项</span>
         <span style="flex:1"></span><span class="hint">双击数量可手调 · 出库不可超库存</span>
       </div>
       <div class="table-wrap">
@@ -170,23 +170,584 @@ td{padding:10px;border-bottom:1px solid #f0e6d8;vertical-align:middle}
 </div>
 
 <script>
-const DEFAULT_PRODUCTS=[{"id":"p1","name":"大号枸杞子","price":15,"unit":"磅","category":"补益明目","tag":"热销爆款","benefit":"滋补肝肾、益精明目"},{"id":"p2","name":"孢子头虫草花","price":15,"unit":"磅","category":"滋补炖汤","tag":"优质头茬","benefit":"增强免疫"},{"id":"p3","name":"大号龙牙百合","price":18,"unit":"磅","category":"润肺安神","tag":"特级无硫","benefit":"润肺止咳"},{"id":"p4","name":"茯苓中心丁","price":13,"unit":"磅","category":"健脾祛湿","tag":"无硫优选","benefit":"健脾渗湿"},{"id":"p5","name":"大片玉竹","price":17,"unit":"磅","category":"养阴生津","tag":"高品质","benefit":"养阴润燥"},{"id":"p6","name":"粉葛根片","price":15,"unit":"磅","category":"健脾祛湿","tag":"买2磅立省","deal":"$28 / 2磅","benefit":"生津止渴"},{"id":"p7","name":"粉质土茯苓","price":15,"unit":"磅","category":"健脾祛湿","tag":"买2磅立省","benefit":"解毒利湿"},{"id":"p8","name":"平阴玫瑰花","price":20,"unit":"磅","category":"养颜茶饮","tag":"特级花蕾","benefit":"行气解郁"},{"id":"p9","name":"甘肃党参","price":25,"unit":"磅","category":"补气养血","tag":"正宗甘肃","benefit":"补中益气"},{"id":"p10","name":"桂圆肉","price":15,"unit":"磅","category":"补血安神","tag":"买2磅立省","benefit":"补益心脾"},{"id":"p11","name":"山楂中心圈","price":10,"unit":"磅","category":"消食开胃","tag":"无核圈","benefit":"消食健胃"},{"id":"p12","name":"铁棍山药片","price":13,"unit":"磅","category":"健脾补肾","tag":"正宗铁棍","benefit":"益气养阴"},{"id":"p13","name":"无花果","price":12,"unit":"磅","category":"润肺生津","tag":"清甜无硫","benefit":"润肺止咳"},{"id":"p14","name":"五指毛桃扎","price":18,"unit":"磅","category":"健脾祛湿","tag":"买2磅立省","benefit":"健脾补肺"},{"id":"p15","name":"原切片黄芪","price":16,"unit":"磅","category":"补气固表","tag":"大片优选","benefit":"补气升阳"},{"id":"p16","name":"正宗白莲子","price":15,"unit":"磅","category":"健脾安神","tag":"建莲品质","benefit":"补脾止泻"},{"id":"p17","name":"中大桑葚","price":10,"unit":"磅","category":"补血滋阴","tag":"买2磅立省","benefit":"补血滋阴"},{"id":"p18","name":"大号开边芡实","price":12,"unit":"磅","category":"健脾固肾","tag":"开边大粒","benefit":"益肾固精"},{"id":"p19","name":"太子参","price":25,"unit":"磅","category":"补气生津","tag":"清补不燥","benefit":"益气健脾"}];
-const LS_P='renxin_products_v2', LS_T='renxin_tx_v2';
+const DEFAULT_PRODUCTS=[
+  {
+    "id": "p1",
+    "name": "大号枸杞子",
+    "price": 15,
+    "unit": "磅",
+    "category": "补益明目",
+    "tag": "热销爆款",
+    "benefit": "滋补肝肾、益精明目",
+    "stock": 8.5,
+    "low": 5
+  },
+  {
+    "id": "p2",
+    "name": "孢子头虫草花",
+    "price": 15,
+    "unit": "磅",
+    "category": "滋补炖汤",
+    "tag": "优质头茬",
+    "benefit": "增强免疫、益肾补肺",
+    "stock": 1.5,
+    "low": 3
+  },
+  {
+    "id": "p3",
+    "name": "大号龙牙百合",
+    "price": 18,
+    "unit": "磅",
+    "category": "润肺安神",
+    "tag": "特级无硫",
+    "benefit": "润肺止咳、清心安神",
+    "stock": 7.5,
+    "low": 5
+  },
+  {
+    "id": "p4",
+    "name": "茯苓中心丁",
+    "price": 13,
+    "unit": "磅",
+    "category": "健脾祛湿",
+    "tag": "无硫优选",
+    "benefit": "健脾渗湿、宁心安神",
+    "stock": 8.0,
+    "low": 5
+  },
+  {
+    "id": "p5",
+    "name": "大片玉竹",
+    "price": 17,
+    "unit": "磅",
+    "category": "养阴生津",
+    "tag": "高品质",
+    "benefit": "养阴润燥、生津止渴",
+    "stock": 6.0,
+    "low": 5
+  },
+  {
+    "id": "p6",
+    "name": "粉葛根片",
+    "price": 15,
+    "unit": "磅",
+    "category": "健脾祛湿",
+    "tag": "买2磅立省",
+    "deal": "$28 / 2磅",
+    "benefit": "解肌退热、生津止渴",
+    "stock": 3.0,
+    "low": 5
+  },
+  {
+    "id": "p7",
+    "name": "粉质土茯苓",
+    "price": 15,
+    "unit": "磅",
+    "category": "健脾祛湿",
+    "tag": "买2磅立省",
+    "benefit": "解毒散结、利湿通络",
+    "stock": 5.0,
+    "low": 5
+  },
+  {
+    "id": "p8",
+    "name": "平阴玫瑰花",
+    "price": 20,
+    "unit": "磅",
+    "category": "养颜茶饮",
+    "tag": "特级花蕾",
+    "benefit": "行气解郁、和血止痛",
+    "stock": 3.0,
+    "low": 3
+  },
+  {
+    "id": "p9",
+    "name": "甘肃党参",
+    "price": 25,
+    "unit": "磅",
+    "category": "补气养血",
+    "tag": "正宗甘肃",
+    "benefit": "补中益气、健脾益肺",
+    "stock": 5.0,
+    "low": 5
+  },
+  {
+    "id": "p10",
+    "name": "桂圆肉",
+    "price": 15,
+    "unit": "磅",
+    "category": "补血安神",
+    "tag": "买2磅立省",
+    "benefit": "补益心脾、养血安神",
+    "stock": 3.0,
+    "low": 5
+  },
+  {
+    "id": "p11",
+    "name": "山楂中心圈",
+    "price": 10,
+    "unit": "磅",
+    "category": "消食开胃",
+    "tag": "无核圈",
+    "benefit": "消食健胃、行气散瘀",
+    "stock": 9.5,
+    "low": 5
+  },
+  {
+    "id": "p12",
+    "name": "铁棍山药片",
+    "price": 13,
+    "unit": "磅",
+    "category": "健脾补肾",
+    "tag": "正宗铁棍",
+    "benefit": "补脾养胃、生津益肺",
+    "stock": 3.0,
+    "low": 5
+  },
+  {
+    "id": "p13",
+    "name": "无花果",
+    "price": 12,
+    "unit": "磅",
+    "category": "润肺生津",
+    "tag": "清甜无硫",
+    "benefit": "清热生津、健脾开胃",
+    "stock": 0.0,
+    "low": 3
+  },
+  {
+    "id": "p14",
+    "name": "五指毛桃扎",
+    "price": 18,
+    "unit": "磅",
+    "category": "健脾祛湿",
+    "tag": "买2磅立省",
+    "benefit": "健脾补肺、行气利湿",
+    "stock": 4.5,
+    "low": 5
+  },
+  {
+    "id": "p15",
+    "name": "原切片黄芪",
+    "price": 16,
+    "unit": "磅",
+    "category": "补气固表",
+    "tag": "大片优选",
+    "benefit": "补气升阳、固表止汗",
+    "stock": 5.0,
+    "low": 5
+  },
+  {
+    "id": "p16",
+    "name": "正宗白莲子",
+    "price": 15,
+    "unit": "磅",
+    "category": "健脾安神",
+    "tag": "建莲品质",
+    "benefit": "补脾止泻、益肾涩精",
+    "stock": 7.5,
+    "low": 5
+  },
+  {
+    "id": "p17",
+    "name": "中大桑葚",
+    "price": 10,
+    "unit": "磅",
+    "category": "补血滋阴",
+    "tag": "买2磅立省",
+    "benefit": "滋阴补血、生津润燥",
+    "stock": 5.0,
+    "low": 5
+  },
+  {
+    "id": "p18",
+    "name": "大号开边芡实",
+    "price": 12,
+    "unit": "磅",
+    "category": "健脾固肾",
+    "tag": "开边大粒",
+    "benefit": "益肾固精、补脾止泻",
+    "stock": 6.0,
+    "low": 5
+  },
+  {
+    "id": "p19",
+    "name": "太子参",
+    "price": 25,
+    "unit": "磅",
+    "category": "补气生津",
+    "tag": "清补不燥",
+    "benefit": "益气健脾、生津润肺",
+    "stock": 2.0,
+    "low": 3
+  },
+  {
+    "id": "p20",
+    "name": "川麦冬",
+    "price": 18,
+    "unit": "磅",
+    "category": "养阴生津",
+    "tag": "正品川产",
+    "benefit": "养阴润肺、益胃生津、清心除烦",
+    "stock": 5.0,
+    "low": 5
+  },
+  {
+    "id": "p21",
+    "name": "胎菊/贡菊",
+    "price": 16,
+    "unit": "磅",
+    "category": "清热解毒",
+    "tag": "清香明目",
+    "benefit": "散风清热、平肝明目、清热解毒",
+    "stock": 2.0,
+    "low": 3
+  },
+  {
+    "id": "p22",
+    "name": "铁皮石斛条",
+    "price": 45,
+    "unit": "磅",
+    "category": "养阴生津",
+    "tag": "高胶质",
+    "benefit": "益胃生津、滋阴清热、明目强腰",
+    "stock": 3.0,
+    "low": 2
+  },
+  {
+    "id": "p23",
+    "name": "铁皮石斛粒",
+    "price": 48,
+    "unit": "磅",
+    "category": "养阴生津",
+    "tag": "枫斗优选",
+    "benefit": "滋养阴津、补益脾胃、生津清热",
+    "stock": 3.0,
+    "low": 2
+  },
+  {
+    "id": "p24",
+    "name": "北沙参",
+    "price": 16,
+    "unit": "磅",
+    "category": "养阴生津",
+    "tag": "无硫条直",
+    "benefit": "养阴清肺、益胃生津、润燥止咳",
+    "stock": 5.0,
+    "low": 5
+  },
+  {
+    "id": "p25",
+    "name": "岷县当归片",
+    "price": 32,
+    "unit": "磅",
+    "category": "补血养血",
+    "tag": "当归头切片",
+    "benefit": "补血活血、调经止痛、润肠通便",
+    "stock": 1.0,
+    "low": 2
+  },
+  {
+    "id": "p26",
+    "name": "精选天麻",
+    "price": 35,
+    "unit": "磅",
+    "category": "平肝息风",
+    "tag": "正宗昭通",
+    "benefit": "息风止痉、平抑肝阳、祛风通络",
+    "stock": 10.0,
+    "low": 5
+  },
+  {
+    "id": "p27",
+    "name": "紫丹参",
+    "price": 16,
+    "unit": "磅",
+    "category": "活血调经",
+    "tag": "浓色紫红",
+    "benefit": "活血祛瘀、通经止痛、清心除烦",
+    "stock": 3.0,
+    "low": 3
+  },
+  {
+    "id": "p28",
+    "name": "新会三宝扎",
+    "price": 28,
+    "unit": "扎",
+    "category": "理气润喉",
+    "tag": "传统手工",
+    "benefit": "陈皮咸橄榄禾秆草，清润利咽、理气化痰",
+    "stock": 3.0,
+    "low": 2
+  },
+  {
+    "id": "p29",
+    "name": "新会陈皮",
+    "price": 38,
+    "unit": "磅",
+    "category": "理气健脾",
+    "tag": "陈香醇厚",
+    "benefit": "理气健脾、燥湿化痰、和胃止呕",
+    "stock": 6.0,
+    "low": 5
+  },
+  {
+    "id": "p30",
+    "name": "高山竹灵芝",
+    "price": 42,
+    "unit": "磅",
+    "category": "清热安神",
+    "tag": "天然野生",
+    "benefit": "清热解毒、护肝健胃、宁心安神",
+    "stock": 1.5,
+    "low": 2
+  },
+  {
+    "id": "p31",
+    "name": "九蒸九晒黄精",
+    "price": 28,
+    "unit": "磅",
+    "category": "补气养阴",
+    "tag": "软糯滋润",
+    "benefit": "补气养阴、健脾润肺、益肾填精",
+    "stock": 4.0,
+    "low": 3
+  },
+  {
+    "id": "p32",
+    "name": "四川松贝/川贝母",
+    "price": 95,
+    "unit": "磅",
+    "category": "化痰止咳",
+    "tag": "止咳圣品",
+    "benefit": "清热润肺、化痰止咳、散结消痈",
+    "stock": 2.0,
+    "low": 2
+  },
+  {
+    "id": "p33",
+    "name": "野生金线莲",
+    "price": 120,
+    "unit": "磅",
+    "category": "清热凉血",
+    "tag": "南方药王",
+    "benefit": "清热凉血、祛风利湿、解毒平肝",
+    "stock": 1.0,
+    "low": 1
+  },
+  {
+    "id": "p34",
+    "name": "精选牛大力",
+    "price": 22,
+    "unit": "磅",
+    "category": "强筋活络",
+    "tag": "煲汤推荐",
+    "benefit": "补虚润肺、强筋活络、平肝舒筋",
+    "stock": 4.0,
+    "low": 3
+  },
+  {
+    "id": "p35",
+    "name": "中大羊肚菌",
+    "price": 68,
+    "unit": "磅",
+    "category": "滋补菌菇",
+    "tag": "干品肉厚",
+    "benefit": "益肠胃、化痰理气、补肾壮阳、增强免疫",
+    "stock": 2.0,
+    "low": 2
+  },
+  {
+    "id": "p36",
+    "name": "特级虎乳菌",
+    "price": 55,
+    "unit": "磅",
+    "category": "止咳平喘",
+    "tag": "虎乳芝",
+    "benefit": "补肺益气、止咳平喘、护肺利咽",
+    "stock": 3.0,
+    "low": 2
+  },
+  {
+    "id": "p37",
+    "name": "天然桔梗",
+    "price": 14,
+    "unit": "磅",
+    "category": "宣肺祛痰",
+    "tag": "宣通肺气",
+    "benefit": "宣肺利咽、祛痰排脓、开音消痈",
+    "stock": 1.0,
+    "low": 2
+  },
+  {
+    "id": "p38",
+    "name": "怀生地黄",
+    "price": 15,
+    "unit": "磅",
+    "category": "清热凉血",
+    "tag": "道地地黄",
+    "benefit": "清热凉血、养阴生津、润燥退热",
+    "stock": 2.0,
+    "low": 2
+  },
+  {
+    "id": "p39",
+    "name": "青海黑枸杞",
+    "price": 36,
+    "unit": "磅",
+    "category": "补益明目",
+    "tag": "花青素王",
+    "benefit": "滋补肝肾、益精明目、抗衰养颜",
+    "stock": 1.0,
+    "low": 2
+  },
+  {
+    "id": "p40",
+    "name": "封丘金银花",
+    "price": 26,
+    "unit": "磅",
+    "category": "清热解毒",
+    "tag": "绿原酸高",
+    "benefit": "清热解毒、疏散风热、凉血止痢",
+    "stock": 1.0,
+    "low": 2
+  },
+  {
+    "id": "p41",
+    "name": "长白山野生桑黄",
+    "price": 60,
+    "unit": "磅",
+    "category": "清热安神",
+    "tag": "森林黄金",
+    "benefit": "活血化瘀、止血护肝、排毒利胆",
+    "stock": 2.0,
+    "low": 2
+  },
+  {
+    "id": "p42",
+    "name": "九制熟地黄",
+    "price": 16,
+    "unit": "磅",
+    "category": "补血养血",
+    "tag": "乌黑发亮",
+    "benefit": "补血滋润、益精填髓、滋补肝肾",
+    "stock": 2.0,
+    "low": 2
+  },
+  {
+    "id": "p43",
+    "name": "地道沙姜",
+    "price": 12,
+    "unit": "磅",
+    "category": "理气健脾",
+    "tag": "开胃提味",
+    "benefit": "行气温中、消食化滞、辟秽止痛",
+    "stock": 1.0,
+    "low": 2
+  },
+  {
+    "id": "p44",
+    "name": "精选姬松茸",
+    "price": 32,
+    "unit": "磅",
+    "category": "滋补菌菇",
+    "tag": "浓郁鲜香",
+    "benefit": "健脾益胃、扶正固本、提高免疫力",
+    "stock": 3.0,
+    "low": 2
+  },
+  {
+    "id": "p45",
+    "name": "东阿阿胶",
+    "price": 180,
+    "unit": "盒",
+    "category": "补血养血",
+    "tag": "国胶正品",
+    "benefit": "补血滋阴、润燥止血、养颜安胎",
+    "stock": 1.0,
+    "low": 1
+  },
+  {
+    "id": "p46",
+    "name": "福牌阿胶",
+    "price": 120,
+    "unit": "盒",
+    "category": "补血养血",
+    "tag": "中华老字号",
+    "benefit": "滋阴补血、调经止血、润肺生津",
+    "stock": 1.0,
+    "low": 1
+  },
+  {
+    "id": "p47",
+    "name": "原果大号罗汉果",
+    "price": 1.5,
+    "unit": "个",
+    "category": "理气润喉",
+    "tag": "神仙果",
+    "benefit": "清热润肺、利咽开音、滑肠通便",
+    "stock": 30.0,
+    "low": 10
+  },
+  {
+    "id": "p48",
+    "name": "干品霸王花",
+    "price": 18,
+    "unit": "磅",
+    "category": "润肺生津",
+    "tag": "剑花煲汤",
+    "benefit": "清热润肺、除痰止咳、滋补养颜",
+    "stock": 2.0,
+    "low": 3
+  },
+  {
+    "id": "p49",
+    "name": "白芍片",
+    "price": 16,
+    "unit": "磅",
+    "category": "补血养血",
+    "tag": "柔肝调经",
+    "benefit": "养血调经、敛阴止汗、柔肝止痛、平抑肝阳",
+    "stock": 1.0,
+    "low": 2
+  },
+  {
+    "id": "p50",
+    "name": "优质鸡骨草",
+    "price": 15,
+    "unit": "磅",
+    "category": "清热解毒",
+    "tag": "利湿退黄",
+    "benefit": "利湿退黄、清热解毒、疏肝止痛",
+    "stock": 3.0,
+    "low": 3
+  },
+  {
+    "id": "p51",
+    "name": "特级贵州薏米",
+    "price": 9,
+    "unit": "磅",
+    "category": "健脾祛湿",
+    "tag": "颗粒饱满",
+    "benefit": "健脾渗湿、除痹止泻、清热排脓",
+    "stock": 3.0,
+    "low": 5
+  }
+];
+const LS_P='renxin_products_v3', LS_T='renxin_tx_v3';
 let products=[], tx=[];
 let mode='in';
 function load(){
   const p=localStorage.getItem(LS_P), t=localStorage.getItem(LS_T);
   if(p){ try{products=JSON.parse(p)}catch(e){products=[]} } 
   if(!products.length){
-    products=DEFAULT_PRODUCTS.map(pr=>({...pr, stock: Math.round(8+Math.random()*18), low:5 }));
+    products=DEFAULT_PRODUCTS.map(pr=>({...pr, stock: (pr.stock !== undefined ? pr.stock : 0), low: pr.low || 5 }));
     saveProducts();
-    // seed a few tx
     const now=Date.now();
     tx=[
-      {id:'t1',ts:now-86400000*2,type:'in',pid:'p1',pname:'大号枸杞子',qty:20,price:12,total:240,after:28,op:'店长',note:'首批到货'},
-      {id:'t2',ts:now-86400000*1.5,type:'out',pid:'p1',pname:'大号枸杞子',qty:2,price:15,total:30,after:26,op:'店长',note:'零售'},
-      {id:'t3',ts:now-86400000*1,type:'out',pid:'p8',pname:'平阴玫瑰花',qty:1,price:20,total:20,after:11,op:'小李',note:'微信客'},
-      {id:'t4',ts:now-3600000*5,type:'in',pid:'p14',pname:'五指毛桃扎',qty:10,price:14,total:140,after:22,op:'店长',note:'补货'},
+      {id:'t1',ts:now-86400000*2,type:'in',pid:'p1',pname:'大号枸杞子',qty:8.5,price:15,total:127.5,after:8.5,op:'店长',note:'手写单盘点入库'},
+      {id:'t2',ts:now-86400000*1.5,type:'in',pid:'p26',pname:'精选天麻',qty:10,price:35,total:350,after:10,op:'店长',note:'手写单盘点入库'},
+      {id:'t3',ts:now-86400000*1,type:'in',pid:'p47',pname:'原果大号罗汉果',qty:30,price:1.5,total:45,after:30,op:'店长',note:'手写单盘点入库'},
     ];
     saveTx();
   }
@@ -248,7 +809,7 @@ function render(){
   const total=list.reduce((s,p)=>s+p.stock,0); // show all, not filtered, for total?
   const totalAll=products.reduce((s,p)=>s+p.stock,0);
   document.getElementById('sStock').textContent=totalAll.toFixed(1);
-  document.getElementById('sStockSub').textContent='磅 · 19 SKU 合计';
+  document.getElementById('sStockSub').textContent='51 SKU 实盘库存合计';
   const low=products.filter(p=>p.stock>0 && p.stock<=p.low).length;
   document.getElementById('sLow').textContent=low;
   const todayStr=new Date().toDateString();
