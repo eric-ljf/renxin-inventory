@@ -91,7 +91,7 @@ header {
 .btn-ghost { background: #fff; border: 1px solid var(--line); color: var(--ink); }
 .btn-ok { background: var(--ok); color: #fff; }
 .btn-warn { background: var(--brand2); color: #fff; }
-.btn-cloud { background: #f0f7ff; border: 1px solid #b9daf8; color: #0b62b0; }
+.btn-cloud { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
 
 .wrap {
   max-width: 1280px;
@@ -264,8 +264,8 @@ td {
     <div class="spacer"></div>
     <span class="badge" id="todayBadge"></span>
     <button class="btn btn-cloud" id="cloudBtn" onclick="openCloudModal()">
-      <span class="dot-indicator dot-gray" id="cloudDot"></span>
-      <span id="cloudStatusText">☁️ 云端协同</span>
+      <span class="dot-indicator dot-green" id="cloudDot"></span>
+      <span id="cloudStatusText">☁️ Supabase 云端已接入</span>
     </button>
     <button class="btn btn-ghost" onclick="exportCSV()">导出 CSV</button>
     <button class="btn btn-ghost" onclick="exportJSON()">备份 JSON</button>
@@ -386,45 +386,33 @@ td {
 <div class="modal" id="cloudModal">
   <div class="sheet">
     <header>
-      <div><strong style="font-size:15px">☁️ 多人云端实时协同设置</strong><div class="hint">多台手机实时同步同一套总账</div></div>
+      <div><strong style="font-size:15px">☁️ Supabase 专属云端数据库设置</strong><div class="hint">全店多台手机实时同步同一套总账</div></div>
       <button class="btn btn-ghost mini" onclick="closeCloudModal()">✕</button>
     </header>
     <div class="sheet-body">
-      <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px;border-radius:10px;margin-bottom:14px;font-size:13px;line-height:1.5">
-        <strong>💡 协同模式说明：</strong><br>
-        1. <strong>免费公共暗号模式（最简单）</strong>：多台手机输入同一个「店铺协同暗号」，即可自动实时多端同步！<br>
-        2. <strong>防篡改保护</strong>：可设置操作密码，他人未输对密码无法增删改。
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:10px;margin-bottom:14px;font-size:13px;line-height:1.5">
+        <strong style="color:#15803d">✅ 专属 Supabase 项目已预装接入！</strong><br>
+        您的云端地址：<code style="background:#fff;padding:2px 4px;border-radius:4px;font-size:11px">https://ahruaqzjhragymgcgenk.supabase.co</code><br>
+        多台手机打开即可自动双向实时同步。
       </div>
 
       <div style="margin-bottom:12px">
-        <label style="font-weight:700;font-size:13px">1. 店铺协同暗号（推荐任意字母/数字组合，如：renxin888）</label>
-        <input id="cfgSyncCode" class="input" placeholder="输入店铺唯一暗号（相同暗号的手机自动同步）" style="width:100%;margin-top:4px" value="renxin-store-master">
-        <div class="hint" style="margin-top:4px">只要在其他手机上输入相同的暗号，即可实时同步所有出入库数据！</div>
+        <label style="font-weight:700;font-size:13px">1. 🔐 店长防乱改密码（可选）</label>
+        <input type="password" id="cfgStorePin" class="input" placeholder="留空则直接出入库；设置后他人无密码无法修改" style="width:100%;margin-top:4px">
+        <div class="hint" style="margin-top:4px">设置后，店员/访客在没有密码的情况下无法修改库存，确保账目准确。</div>
       </div>
 
       <div class="divider"></div>
 
       <div style="margin-bottom:12px">
-        <label style="font-weight:700;font-size:13px">2. 🔐 店长操作防乱改密码（可选）</label>
-        <input type="password" id="cfgStorePin" class="input" placeholder="留空则无需密码；输入密码后出入库需验证" style="width:100%;margin-top:4px">
-        <div class="hint" style="margin-top:4px">设置后，其他人即使打开页面也无法随便修改库存，只有输入正确密码才能出入库。</div>
+        <label style="font-weight:700;font-size:13px">2. Supabase 项目配置</label>
+        <input id="cfgSupaUrl" class="input" style="width:100%;margin-top:4px" value="https://ahruaqzjhragymgcgenk.supabase.co">
+        <input id="cfgSupaKey" class="input" style="width:100%;margin-top:6px;font-size:11px" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFocnVhcXpqaHJhZ3ltZ2NnZW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5NDYwODUsImV4cCI6MjEwMzUyMjA4NX0.BYRsbeF9GVY0lcjkfi3-G8KWP-z8c9jWCsUXmLY7t4c">
       </div>
-
-      <div class="divider"></div>
-
-      <details>
-        <summary style="font-size:12px;color:var(--muted);cursor:pointer;font-weight:700">高级设置：使用自己的 Supabase 私有云库（可选）</summary>
-        <div style="margin-top:8px">
-          <label class="hint">Supabase Project URL</label>
-          <input id="cfgSupaUrl" class="input" placeholder="https://xxxx.supabase.co" style="width:100%;margin-top:2px">
-          <label class="hint" style="margin-top:6px;display:block">Supabase anon Key</label>
-          <input id="cfgSupaKey" class="input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." style="width:100%;margin-top:2px">
-        </div>
-      </details>
 
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px">
-        <button class="btn btn-ghost" onclick="disableCloud()">断开云端 (单机模式)</button>
-        <button class="btn btn-primary" onclick="saveCloudConfig()">💾 开启并连接云端</button>
+        <button class="btn btn-ghost" onclick="closeCloudModal()">关闭</button>
+        <button class="btn btn-primary" onclick="saveCloudConfig()">💾 保存并立即同步</button>
       </div>
     </div>
   </div>
@@ -997,10 +985,18 @@ const DEFAULT_PRODUCTS = [
 ];
 
 const LS_P = 'renxin_products_v4', LS_T = 'renxin_tx_v4';
-const LS_CFG = 'renxin_cloud_cfg_v1';
+const LS_CFG = 'renxin_cloud_cfg_v2';
 let products = [], tx = [];
 let mode = 'in';
-let cloudConfig = { enabled: false, syncCode: '', pin: '', supaUrl: '', supaKey: '' };
+
+// 默认已预置接入用户的 Supabase 专属数据库
+let cloudConfig = {
+  enabled: true,
+  pin: '',
+  supaUrl: 'https://ahruaqzjhragymgcgenk.supabase.co',
+  supaKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFocnVhcXpqaHJhZ3ltZ2NnZW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5NDYwODUsImV4cCI6MjEwMzUyMjA4NX0.BYRsbeF9GVY0lcjkfi3-G8KWP-z8c9jWCsUXmLY7t4c'
+};
+
 let isSyncing = false;
 let autoSyncTimer = null;
 
@@ -1017,7 +1013,12 @@ function safeRemove(k){
 function loadCloudConfig(){
   const raw = safeGet(LS_CFG);
   if(raw){
-    try { cloudConfig = JSON.parse(raw); } catch(e){ }
+    try {
+      const d = JSON.parse(raw);
+      if(d && typeof d === 'object'){
+        cloudConfig = Object.assign(cloudConfig, d);
+      }
+    } catch(e){ }
   }
 }
 
@@ -1030,21 +1031,20 @@ function updateCloudUI(){
   const dot = document.getElementById('cloudDot');
   const txt = document.getElementById('cloudStatusText');
   if(!dot || !txt) return;
-  if(cloudConfig.enabled && cloudConfig.syncCode){
+  if(cloudConfig.enabled){
     dot.className = 'dot-indicator dot-green';
-    txt.textContent = '🟢 协同中 (' + cloudConfig.syncCode.slice(0,6) + '..)';
+    txt.textContent = '☁️ 云端实时同步中';
   } else {
     dot.className = 'dot-indicator dot-gray';
-    txt.textContent = '☁️ 云端协同';
+    txt.textContent = '☁️ 单机模式';
   }
 }
 
 function openCloudModal(){
   loadCloudConfig();
-  document.getElementById('cfgSyncCode').value = cloudConfig.syncCode || 'renxin-store-master';
   document.getElementById('cfgStorePin').value = cloudConfig.pin || '';
-  document.getElementById('cfgSupaUrl').value = cloudConfig.supaUrl || '';
-  document.getElementById('cfgSupaKey').value = cloudConfig.supaKey || '';
+  document.getElementById('cfgSupaUrl').value = cloudConfig.supaUrl || 'https://ahruaqzjhragymgcgenk.supabase.co';
+  document.getElementById('cfgSupaKey').value = cloudConfig.supaKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFocnVhcXpqaHJhZ3ltZ2NnZW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5NDYwODUsImV4cCI6MjEwMzUyMjA4NX0.BYRsbeF9GVY0lcjkfi3-G8KWP-z8c9jWCsUXmLY7t4c';
   document.getElementById('cloudModal').classList.add('open');
 }
 
@@ -1053,40 +1053,20 @@ function closeCloudModal(){
 }
 
 function saveCloudConfig(){
-  const code = (document.getElementById('cfgSyncCode').value || '').trim();
   const pin = (document.getElementById('cfgStorePin').value || '').trim();
   const supaUrl = (document.getElementById('cfgSupaUrl').value || '').trim();
   const supaKey = (document.getElementById('cfgSupaKey').value || '').trim();
   
-  if(!code && !supaUrl){
-    return alert('请输入店铺协同暗号或 Supabase 配置！');
-  }
-  
   cloudConfig = {
     enabled: true,
-    syncCode: code || 'renxin-store-master',
     pin: pin,
-    supaUrl: supaUrl,
+    supaUrl: supaUrl || 'https://ahruaqzjhragymgcgenk.supabase.co',
     supaKey: supaKey
   };
   saveCloudConfigToStorage();
   closeCloudModal();
-  alert('云端协同配置成功！正在同步最新数据...');
   pullFromCloud(true);
   startAutoSync();
-}
-
-function disableCloud(){
-  cloudConfig.enabled = false;
-  saveCloudConfigToStorage();
-  closeCloudModal();
-  if(autoSyncTimer) clearInterval(autoSyncTimer);
-  alert('已切换回本地单机存储模式。');
-}
-
-function getSyncUrl(){
-  const code = encodeURIComponent(cloudConfig.syncCode || 'renxin-store-master');
-  return 'https://kvdb.io/4y9pA7y2h5j3g4k5l6z1x2/' + code;
 }
 
 async function pushToCloud(){
@@ -1095,18 +1075,25 @@ async function pushToCloud(){
   if(dot) dot.className = 'dot-indicator dot-orange';
   isSyncing = true;
   try {
-    const payload = {
-      products: products,
-      tx: tx,
-      updatedAt: Date.now()
-    };
-    await fetch(getSyncUrl(), {
+    const url = cloudConfig.supaUrl.replace(/\/+$/, '') + '/rest/v1/inventory_data';
+    const payload = [{
+      id: 'renxin_master',
+      data: { products: products, tx: tx },
+      updated_at: new Date().toISOString()
+    }];
+    
+    await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'apikey': cloudConfig.supaKey,
+        'Authorization': 'Bearer ' + cloudConfig.supaKey,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
       body: JSON.stringify(payload)
     });
   } catch(e){
-    console.warn('Cloud push error:', e);
+    console.warn('Supabase push error:', e);
   } finally {
     isSyncing = false;
     updateCloudUI();
@@ -1116,22 +1103,33 @@ async function pushToCloud(){
 async function pullFromCloud(force){
   if(!cloudConfig.enabled || (isSyncing && !force)) return;
   try {
-    const res = await fetch(getSyncUrl() + '?t=' + Date.now());
-    if(res.ok){
-      const data = await res.json();
-      if(data && Array.isArray(data.products) && data.products.length >= 19){
-        products = data.products;
-        if(Array.isArray(data.tx)) tx = data.tx;
-        saveProducts();
-        saveTx();
-        render();
-        renderHistory();
+    const url = cloudConfig.supaUrl.replace(/\/+$/, '') + '/rest/v1/inventory_data?id=eq.renxin_master&select=*';
+    const res = await fetch(url, {
+      headers: {
+        'apikey': cloudConfig.supaKey,
+        'Authorization': 'Bearer ' + cloudConfig.supaKey,
+        'Accept': 'application/json'
       }
-    } else if(res.status === 404){
-      await pushToCloud();
+    });
+    if(res.ok){
+      const rows = await res.json();
+      if(Array.isArray(rows) && rows.length > 0 && rows[0].data){
+        const d = rows[0].data;
+        if(Array.isArray(d.products) && d.products.length >= 19){
+          products = d.products;
+          if(Array.isArray(d.tx)) tx = d.tx;
+          saveProducts();
+          saveTx();
+          render();
+          renderHistory();
+        }
+      } else {
+        // Table exists but is empty, push initial products
+        await pushToCloud();
+      }
     }
   } catch(e){
-    console.warn('Cloud pull error:', e);
+    console.warn('Supabase pull error:', e);
   } finally {
     updateCloudUI();
   }
