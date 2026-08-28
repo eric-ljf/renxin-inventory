@@ -64,6 +64,14 @@ header {
 .hdr h1 { margin: 0; font-size: 17px; letter-spacing: 1px; }
 .hdr small { color: var(--muted); font-size: 11px; display: block; }
 .hdr .spacer { flex: 1; }
+.badge {
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 11px;
+  color: var(--muted);
+}
 .btn {
   appearance: none;
   border: 0;
@@ -256,6 +264,7 @@ td {
       <small>现货 · 免硫 · 欢迎自取 — 51味精选道地药材台账</small>
     </div>
     <div class="spacer"></div>
+    <span class="badge" id="todayBadge"></span>
     
     <!-- 权限状态切换按钮 -->
     <button class="btn btn-lock" id="authBtn" onclick="toggleAuthModal()">
@@ -264,7 +273,7 @@ td {
     
     <button class="btn btn-cloud" id="cloudBtn" onclick="openCloudModal()">
       <span class="dot-indicator dot-green" id="cloudDot"></span>
-      <span id="cloudStatusText">☁️ 云端同步中</span>
+      <span id="cloudStatusText">☁️ 云端已接入</span>
     </button>
     <button class="btn btn-ghost" onclick="exportCSV()">导出 CSV</button>
     <button class="btn btn-ghost" onclick="exportJSON()">备份 JSON</button>
@@ -1064,13 +1073,13 @@ function updateAuthUI(){
   if(!btn) return;
   if(isAuthorized){
     btn.className = 'btn btn-unlocked';
-    icon.textContent = '🔓';
-    txt.textContent = '店长已解锁';
+    if(icon) icon.textContent = '🔓';
+    if(txt) txt.textContent = '店长已解锁';
     if(hint) hint.textContent = '🔓 已解锁店长权限 · 可自由出入库与手调库存';
   } else {
     btn.className = 'btn btn-lock';
-    icon.textContent = '🔒';
-    txt.textContent = '只读锁定';
+    if(icon) icon.textContent = '🔒';
+    if(txt) txt.textContent = '只读锁定';
     if(hint) hint.textContent = '🔒 当前为只读模式 · 修改需输入店长密码';
   }
 }
@@ -1088,17 +1097,21 @@ function toggleAuthModal(){
 }
 
 function openAuthModal(){
-  document.getElementById('inputPin').value = '';
-  document.getElementById('authModal').classList.add('open');
-  setTimeout(function(){ document.getElementById('inputPin').focus(); }, 50);
+  const el = document.getElementById('inputPin');
+  if(el) el.value = '';
+  const m = document.getElementById('authModal');
+  if(m) m.classList.add('open');
+  setTimeout(function(){ if(el) el.focus(); }, 50);
 }
 
 function closeAuthModal(){
-  document.getElementById('authModal').classList.remove('open');
+  const m = document.getElementById('authModal');
+  if(m) m.classList.remove('open');
 }
 
 function verifyAndUnlock(){
-  const val = (document.getElementById('inputPin').value || '').trim();
+  const el = document.getElementById('inputPin');
+  const val = el ? (el.value || '').trim() : '';
   if(val === storePin){
     isAuthorized = true;
     safeSet(LS_SESSION, 'unlocked_' + storePin);
@@ -1107,25 +1120,33 @@ function verifyAndUnlock(){
     alert('🎉 密码验证成功！已解锁店长出入库与修改权限。');
   } else {
     alert('❌ 密码错误！请重新输入（默认初始密码：8888）');
-    document.getElementById('inputPin').value = '';
-    document.getElementById('inputPin').focus();
+    if(el){
+      el.value = '';
+      el.focus();
+    }
   }
 }
 
 function openChangePinModal(){
   closeAuthModal();
-  document.getElementById('oldPin').value = '';
-  document.getElementById('newPin').value = '';
-  document.getElementById('changePinModal').classList.add('open');
+  const o = document.getElementById('oldPin');
+  const n = document.getElementById('newPin');
+  if(o) o.value = '';
+  if(n) n.value = '';
+  const m = document.getElementById('changePinModal');
+  if(m) m.classList.add('open');
 }
 
 function closeChangePinModal(){
-  document.getElementById('changePinModal').classList.remove('open');
+  const m = document.getElementById('changePinModal');
+  if(m) m.classList.remove('open');
 }
 
 function saveNewPin(){
-  const oldVal = (document.getElementById('oldPin').value || '').trim();
-  const newVal = (document.getElementById('newPin').value || '').trim();
+  const o = document.getElementById('oldPin');
+  const n = document.getElementById('newPin');
+  const oldVal = o ? (o.value || '').trim() : '';
+  const newVal = n ? (n.value || '').trim() : '';
   if(oldVal !== storePin){
     return alert('旧密码错误，无法修改！');
   }
@@ -1157,10 +1178,12 @@ function handleAuthAction(type, pid){
 }
 
 function openCloudModal(){
-  document.getElementById('cloudModal').classList.add('open');
+  const m = document.getElementById('cloudModal');
+  if(m) m.classList.add('open');
 }
 function closeCloudModal(){
-  document.getElementById('cloudModal').classList.remove('open');
+  const m = document.getElementById('cloudModal');
+  if(m) m.classList.remove('open');
 }
 
 async function pushToCloud(){
@@ -1218,9 +1241,6 @@ async function pullFromCloud(force){
           render();
           renderHistory();
         }
-      } else {
-        // Table exists but is empty, push initial products
-        await pushToCloud();
       }
     }
   } catch(e){
@@ -1272,50 +1292,65 @@ function saveTx(){
 
 function init(){
   load();
-  try {
-    document.getElementById('todayBadge').textContent = new Date().toLocaleDateString('zh-CN', {year:'numeric', month:'long', day:'numeric', weekday:'short'});
-  } catch(e){
-    document.getElementById('todayBadge').textContent = '仁心养生行';
+  const todayBadge = document.getElementById('todayBadge');
+  if(todayBadge){
+    try {
+      todayBadge.textContent = new Date().toLocaleDateString('zh-CN', {year:'numeric', month:'long', day:'numeric', weekday:'short'});
+    } catch(e){
+      todayBadge.textContent = '仁心养生行';
+    }
   }
   
   const cats = [...new Set(products.map(function(p){ return p.category; }))];
   const sel = document.getElementById('cat');
-  sel.innerHTML = '<option value="">全部分类</option>';
-  cats.forEach(function(c){
-    const o = document.createElement('option');
-    o.value = c;
-    o.textContent = c;
-    sel.appendChild(o);
-  });
+  if(sel){
+    sel.innerHTML = '<option value="">全部分类</option>';
+    cats.forEach(function(c){
+      const o = document.createElement('option');
+      o.value = c;
+      o.textContent = c;
+      sel.appendChild(o);
+    });
+  }
   
   const mp = document.getElementById('mProduct');
-  mp.innerHTML = '';
-  products.forEach(function(p){
-    const o = document.createElement('option');
-    o.value = p.id;
-    o.textContent = p.name + ' (现存: ' + p.stock + p.unit + ')';
-    mp.appendChild(o);
-  });
+  if(mp){
+    mp.innerHTML = '';
+    products.forEach(function(p){
+      const o = document.createElement('option');
+      o.value = p.id;
+      o.textContent = p.name + ' (现存: ' + p.stock + p.unit + ')';
+      mp.appendChild(o);
+    });
+    mp.addEventListener('change', syncPriceHint);
+  }
   
-  document.getElementById('mProduct').addEventListener('change', syncPriceHint);
   render();
   renderHistory();
-  document.getElementById('importFile').addEventListener('change', function(e){
-    requireAuth(function(){
-      onImport(e);
+  
+  const imp = document.getElementById('importFile');
+  if(imp){
+    imp.addEventListener('change', function(e){
+      requireAuth(function(){
+        onImport(e);
+      });
     });
-  });
+  }
   
   pullFromCloud(true);
   startAutoSync();
 }
 
 function syncPriceHint(){
-  const pid = document.getElementById('mProduct').value;
+  const mp = document.getElementById('mProduct');
+  if(!mp) return;
+  const pid = mp.value;
   const pr = products.find(function(x){ return x.id === pid; });
   if(!pr) return;
-  document.getElementById('mPrice').placeholder = pr.price;
-  document.getElementById('mStockHint').textContent = '当前库存：' + pr.stock + ' ' + pr.unit + ' · 预警阈值：' + pr.low + pr.unit + ' · 状态：' + stockLabel(pr);
+  const mpPrice = document.getElementById('mPrice');
+  const mpHint = document.getElementById('mStockHint');
+  if(mpPrice) mpPrice.placeholder = pr.price;
+  if(mpHint) mpHint.textContent = '当前库存：' + pr.stock + ' ' + pr.unit + ' · 预警阈值：' + pr.low + pr.unit + ' · 状态：' + stockLabel(pr);
 }
 
 function stockLabel(pr){
@@ -1331,17 +1366,23 @@ function stockPill(pr){
 }
 
 function render(){
-  const q = (document.getElementById('q').value || '').trim().toLowerCase();
-  const cat = document.getElementById('cat').value;
-  const sf = document.getElementById('stockFilter').value;
+  const qEl = document.getElementById('q');
+  const catEl = document.getElementById('cat');
+  const sfEl = document.getElementById('stockFilter');
+  const q = qEl ? (qEl.value || '').trim().toLowerCase() : '';
+  const cat = catEl ? catEl.value : '';
+  const sf = sfEl ? sfEl.value : '';
   let list = [...products];
   if(q) list = list.filter(function(p){ return [p.name, p.benefit, p.category, p.tag || ''].join(' ').toLowerCase().includes(q); });
   if(cat) list = list.filter(function(p){ return p.category === cat; });
   if(sf === 'low') list = list.filter(function(p){ return p.stock > 0 && p.stock <= p.low; });
   if(sf === 'out') list = list.filter(function(p){ return p.stock <= 0; });
   
-  document.getElementById('countChip').textContent = list.length + ' 项';
+  const countChip = document.getElementById('countChip');
+  if(countChip) countChip.textContent = list.length + ' 项';
+  
   const tb = document.getElementById('tbody');
+  if(!tb) return;
   tb.innerHTML = '';
   
   list.forEach(function(p){
@@ -1368,38 +1409,47 @@ function render(){
   });
 
   // 统计指标
-  document.getElementById('sSku').textContent = products.length;
+  const sSku = document.getElementById('sSku');
+  const sStock = document.getElementById('sStock');
+  const sStockSub = document.getElementById('sStockSub');
+  const sLow = document.getElementById('sLow');
+  const sToday = document.getElementById('sToday');
+  const sTodaySub = document.getElementById('sTodaySub');
+  
+  if(sSku) sSku.textContent = products.length;
   const totalAll = products.reduce(function(s, p){ return s + (typeof p.stock === 'number' ? p.stock : 0); }, 0);
-  document.getElementById('sStock').textContent = totalAll.toFixed(1);
-  document.getElementById('sStockSub').textContent = products.length + ' SKU 实盘合计';
+  if(sStock) sStock.textContent = totalAll.toFixed(1);
+  if(sStockSub) sStockSub.textContent = products.length + ' SKU 实盘合计';
   
   const lowCount = products.filter(function(p){ return p.stock > 0 && p.stock <= p.low; }).length;
-  document.getElementById('sLow').textContent = lowCount;
+  if(sLow) sLow.textContent = lowCount;
   
   const todayStr = new Date().toDateString();
   const todayTx = tx.filter(function(x){ return new Date(x.ts).toDateString() === todayStr; });
   const tin = todayTx.filter(function(x){ return x.type === 'in'; }).reduce(function(s, x){ return s + x.qty; }, 0);
   const tout = todayTx.filter(function(x){ return x.type === 'out'; }).reduce(function(s, x){ return s + x.qty; }, 0);
-  document.getElementById('sToday').textContent = todayTx.length ? (tin.toFixed(1) + ' / ' + tout.toFixed(1)) : '0 / 0';
-  document.getElementById('sTodaySub').textContent = '今日 入库 / 出库';
+  if(sToday) sToday.textContent = todayTx.length ? (tin.toFixed(1) + ' / ' + tout.toFixed(1)) : '0 / 0';
+  if(sTodaySub) sTodaySub.textContent = '今日 入库 / 出库';
 
   // 最近流水
   const recent = [...tx].sort(function(a, b){ return b.ts - a.ts; }).slice(0, 10);
   const rc = document.getElementById('recent');
-  rc.innerHTML = recent.length ? '' : '<div class="hint" style="padding:12px">暂无流水记录</div>';
-  recent.forEach(function(r){
-    const d = document.createElement('div');
-    d.className = 'log-item';
-    const prod = products.find(function(p){ return p.id === r.pid; });
-    const unit = prod ? prod.unit : '磅';
-    d.innerHTML = '<span class="dot ' + r.type + '"></span>' +
-      '<div style="flex:1">' +
-        '<div style="font-weight:700">' + r.pname + ' <span class="hint">' + (r.type === 'in' ? '+' : '-') + r.qty + unit + '</span></div>' +
-        '<div class="hint">' + new Date(r.ts).toLocaleString('zh-CN') + ' · ' + r.op + ' · ' + (r.note || '—') + '</div>' +
-      '</div>' +
-      '<span class="pill ' + (r.type === 'in' ? 'pill-ok' : 'pill-danger') + '">' + (r.type === 'in' ? '入库' : '出库') + '</span>';
-    rc.appendChild(d);
-  });
+  if(rc){
+    rc.innerHTML = recent.length ? '' : '<div class="hint" style="padding:12px">暂无流水记录</div>';
+    recent.forEach(function(r){
+      const d = document.createElement('div');
+      d.className = 'log-item';
+      const prod = products.find(function(p){ return p.id === r.pid; });
+      const unit = prod ? prod.unit : '磅';
+      d.innerHTML = '<span class="dot ' + r.type + '"></span>' +
+        '<div style="flex:1">' +
+          '<div style="font-weight:700">' + r.pname + ' <span class="hint">' + (r.type === 'in' ? '+' : '-') + r.qty + unit + '</span></div>' +
+          '<div class="hint">' + new Date(r.ts).toLocaleString('zh-CN') + ' · ' + r.op + ' · ' + (r.note || '—') + '</div>' +
+        '</div>' +
+        '<span class="pill ' + (r.type === 'in' ? 'pill-ok' : 'pill-danger') + '">' + (r.type === 'in' ? '入库' : '出库') + '</span>';
+      rc.appendChild(d);
+    });
+  }
 
   // 畅销与补货
   const last30 = Date.now() - 30 * 86400000;
@@ -1407,35 +1457,48 @@ function render(){
   const by = {};
   out30.forEach(function(x){ by[x.pname] = (by[x.pname] || 0) + x.qty; });
   const topO = Object.entries(by).sort(function(a, b){ return b[1] - a[1]; })[0];
-  document.getElementById('topSeller').textContent = topO ? (topO[0] + ' · ' + topO[1].toFixed(1)) : '暂无数据';
+  const topSeller = document.getElementById('topSeller');
+  if(topSeller) topSeller.textContent = topO ? (topO[0] + ' · ' + topO[1].toFixed(1)) : '暂无数据';
 
   const in30 = tx.filter(function(x){ return x.type === 'in' && x.ts > last30; });
   const byI = {};
   in30.forEach(function(x){ byI[x.pname] = (byI[x.pname] || 0) + x.qty; });
   const topI = Object.entries(byI).sort(function(a, b){ return b[1] - a[1]; })[0];
-  document.getElementById('topRestock').textContent = topI ? (topI[0] + ' · ' + topI[1].toFixed(1)) : '暂无数据';
+  const topRestock = document.getElementById('topRestock');
+  if(topRestock) topRestock.textContent = topI ? (topI[0] + ' · ' + topI[1].toFixed(1)) : '暂无数据';
 }
 
 function openModal(type, pid){
   mode = type;
   const m = document.getElementById('modal');
-  document.getElementById('mTitle').textContent = (type === 'in' ? '药材入库' : '药材出库');
-  document.getElementById('mHint').textContent = (type === 'in' ? '增加现有库存' : '扣减现有库存并记账');
-  document.getElementById('mSubmit').textContent = (type === 'in' ? '确认入库' : '确认出库');
-  document.getElementById('mSubmit').className = 'btn ' + (type === 'in' ? 'btn-ok' : 'btn-warn');
+  const mTitle = document.getElementById('mTitle');
+  const mHint = document.getElementById('mHint');
+  const mSubmit = document.getElementById('mSubmit');
+  const mProduct = document.getElementById('mProduct');
+  const mQty = document.getElementById('mQty');
+  const mNote = document.getElementById('mNote');
+  const mPrice = document.getElementById('mPrice');
   
-  if(pid) document.getElementById('mProduct').value = pid;
-  document.getElementById('mQty').value = '';
-  document.getElementById('mNote').value = '';
-  document.getElementById('mPrice').value = '';
+  if(mTitle) mTitle.textContent = (type === 'in' ? '药材入库' : '药材出库');
+  if(mHint) mHint.textContent = (type === 'in' ? '增加现有库存' : '扣减现有库存并记账');
+  if(mSubmit){
+    mSubmit.textContent = (type === 'in' ? '确认入库' : '确认出库');
+    mSubmit.className = 'btn ' + (type === 'in' ? 'btn-ok' : 'btn-warn');
+  }
+  
+  if(pid && mProduct) mProduct.value = pid;
+  if(mQty) mQty.value = '';
+  if(mNote) mNote.value = '';
+  if(mPrice) mPrice.value = '';
   
   syncPriceHint();
-  m.classList.add('open');
-  setTimeout(function(){ document.getElementById('mQty').focus(); }, 50);
+  if(m) m.classList.add('open');
+  setTimeout(function(){ if(mQty) mQty.focus(); }, 50);
 }
 
 function closeModal(){
-  document.getElementById('modal').classList.remove('open');
+  const m = document.getElementById('modal');
+  if(m) m.classList.remove('open');
 }
 
 async function submitModal(){
@@ -1443,11 +1506,17 @@ async function submitModal(){
     alert('权限已被锁定，请先输入店长密码解锁！');
     return openAuthModal();
   }
-  const pid = document.getElementById('mProduct').value;
-  const qty = parseFloat(document.getElementById('mQty').value);
-  const price = parseFloat(document.getElementById('mPrice').value);
-  const op = document.getElementById('mOp').value.trim() || '店长';
-  const note = document.getElementById('mNote').value.trim();
+  const mProduct = document.getElementById('mProduct');
+  const mQty = document.getElementById('mQty');
+  const mPrice = document.getElementById('mPrice');
+  const mOp = document.getElementById('mOp');
+  const mNote = document.getElementById('mNote');
+  
+  const pid = mProduct ? mProduct.value : '';
+  const qty = mQty ? parseFloat(mQty.value) : 0;
+  const price = mPrice ? parseFloat(mPrice.value) : NaN;
+  const op = mOp ? (mOp.value.trim() || '店长') : '店长';
+  const note = mNote ? mNote.value.trim() : '';
   const pr = products.find(function(p){ return p.id === pid; });
   if(!pr) return alert('请选择有效药材');
   if(!qty || qty <= 0) return alert('请输入有效的变动数量');
@@ -1526,9 +1595,12 @@ function editLow(pid){
 }
 
 function renderHistory(){
-  const type = document.getElementById('hType').value;
-  const q = (document.getElementById('hQ').value || '').toLowerCase();
-  const d = document.getElementById('hDate').value;
+  const hType = document.getElementById('hType');
+  const hQ = document.getElementById('hQ');
+  const hDate = document.getElementById('hDate');
+  const type = hType ? hType.value : '';
+  const q = hQ ? (hQ.value || '').toLowerCase() : '';
+  const d = hDate ? hDate.value : '';
   let list = [...tx].sort(function(a, b){ return b.ts - a.ts; });
   if(type) list = list.filter(function(x){ return x.type === type; });
   if(q) list = list.filter(function(x){ return [x.pname, x.note, x.op].join(' ').toLowerCase().includes(q); });
@@ -1537,6 +1609,7 @@ function renderHistory(){
     list = list.filter(function(x){ return new Date(x.ts).toDateString() === ds; });
   }
   const tb = document.getElementById('htbody');
+  if(!tb) return;
   tb.innerHTML = '';
   if(!list.length){
     tb.innerHTML = '<tr><td colspan="9" class="hint" style="text-align:center;padding:16px">暂无符合条件的流水记录</td></tr>';
@@ -1637,7 +1710,8 @@ function resetDemo(){
 }
 
 function openHistory(){
-  document.getElementById('historyCard').scrollIntoView({behavior: 'smooth'});
+  const el = document.getElementById('historyCard');
+  if(el) el.scrollIntoView({behavior: 'smooth'});
 }
 
 // Initialize when DOM ready
