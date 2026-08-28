@@ -2,6 +2,9 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>仁心养生行 · 出入库管理</title>
 <style>
@@ -738,20 +741,33 @@ const LS_P='renxin_products_v3', LS_T='renxin_tx_v3';
 let products=[], tx=[];
 let mode='in';
 function load(){
-  const p=localStorage.getItem(LS_P), t=localStorage.getItem(LS_T);
-  if(p){ try{products=JSON.parse(p)}catch(e){products=[]} } 
-  if(!products.length){
-    products=DEFAULT_PRODUCTS.map(pr=>({...pr, stock: (pr.stock !== undefined ? pr.stock : 0), low: pr.low || 5 }));
+  // Clear any legacy v1/v2 storage
+  localStorage.removeItem('renxin_products');
+  localStorage.removeItem('renxin_products_v2');
+  localStorage.removeItem('renxin_tx');
+  localStorage.removeItem('renxin_tx_v2');
+
+  const p = localStorage.getItem(LS_P), t = localStorage.getItem(LS_T);
+  if(p){ try{ products = JSON.parse(p); }catch(e){ products = []; } }
+  
+  // If no products or if old cache with fewer than 51 items, force load all 51 products!
+  if(!products.length || products.length < DEFAULT_PRODUCTS.length){
+    products = DEFAULT_PRODUCTS.map(pr => ({
+      ...pr,
+      stock: (pr.stock !== undefined) ? pr.stock : 0,
+      low: pr.low || 5
+    }));
     saveProducts();
-    const now=Date.now();
-    tx=[
-      {id:'t1',ts:now-86400000*2,type:'in',pid:'p1',pname:'大号枸杞子',qty:8.5,price:15,total:127.5,after:8.5,op:'店长',note:'手写单盘点入库'},
-      {id:'t2',ts:now-86400000*1.5,type:'in',pid:'p26',pname:'精选天麻',qty:10,price:35,total:350,after:10,op:'店长',note:'手写单盘点入库'},
-      {id:'t3',ts:now-86400000*1,type:'in',pid:'p47',pname:'原果大号罗汉果',qty:30,price:1.5,total:45,after:30,op:'店长',note:'手写单盘点入库'},
+    const now = Date.now();
+    tx = [
+      {id:'t1', ts:now-86400000*2, type:'in', pid:'p1', pname:'大号枸杞子', qty:8.5, price:15, total:127.5, after:8.5, op:'店长', note:'手写单盘点初始入库'},
+      {id:'t2', ts:now-86400000*1.5, type:'in', pid:'p26', pname:'精选天麻', qty:10, price:35, total:350, after:10, op:'店长', note:'手写单盘点初始入库'},
+      {id:'t3', ts:now-86400000*1, type:'in', pid:'p47', pname:'原果大号罗汉果', qty:30, price:1.5, total:45, after:30, op:'店长', note:'手写单盘点初始入库'},
     ];
     saveTx();
   }
-  if(t){ try{tx=JSON.parse(t)}catch(e){} }
+  if(t){ try{ tx = JSON.parse(t); }catch(e){ tx = []; } }
+}
 }
 function saveProducts(){localStorage.setItem(LS_P, JSON.stringify(products))}
 function saveTx(){localStorage.setItem(LS_T, JSON.stringify(tx))}
