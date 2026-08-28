@@ -34,7 +34,7 @@ header {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
@@ -45,7 +45,7 @@ header {
   padding: 10px 16px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .logo {
@@ -64,14 +64,6 @@ header {
 .hdr h1 { margin: 0; font-size: 17px; letter-spacing: 1px; }
 .hdr small { color: var(--muted); font-size: 11px; display: block; }
 .hdr .spacer { flex: 1; }
-.badge {
-  padding: 4px 9px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: #fff;
-  font-size: 11px;
-  color: var(--muted);
-}
 .btn {
   appearance: none;
   border: 0;
@@ -92,6 +84,8 @@ header {
 .btn-ok { background: var(--ok); color: #fff; }
 .btn-warn { background: var(--brand2); color: #fff; }
 .btn-cloud { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+.btn-lock { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+.btn-unlocked { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
 
 .wrap {
   max-width: 1280px;
@@ -199,7 +193,7 @@ td {
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.45);
+  background: rgba(0,0,0,.5);
   display: none;
   place-items: center;
   padding: 16px;
@@ -207,7 +201,7 @@ td {
 }
 .modal.open { display: grid; }
 .sheet {
-  width: min(520px, 100%);
+  width: min(500px, 100%);
   background: #fff;
   border-radius: 14px;
   box-shadow: 0 20px 60px rgba(0,0,0,.25);
@@ -262,16 +256,21 @@ td {
       <small>现货 · 免硫 · 欢迎自取 — 51味精选道地药材台账</small>
     </div>
     <div class="spacer"></div>
-    <span class="badge" id="todayBadge"></span>
+    
+    <!-- 权限状态切换按钮 -->
+    <button class="btn btn-lock" id="authBtn" onclick="toggleAuthModal()">
+      <span id="authIcon">🔒</span> <span id="authText">只读锁定</span>
+    </button>
+    
     <button class="btn btn-cloud" id="cloudBtn" onclick="openCloudModal()">
       <span class="dot-indicator dot-green" id="cloudDot"></span>
-      <span id="cloudStatusText">☁️ Supabase 云端已接入</span>
+      <span id="cloudStatusText">☁️ 云端同步中</span>
     </button>
     <button class="btn btn-ghost" onclick="exportCSV()">导出 CSV</button>
     <button class="btn btn-ghost" onclick="exportJSON()">备份 JSON</button>
     <label class="btn btn-ghost" style="cursor:pointer">导入备份<input type="file" id="importFile" accept=".json" hidden></label>
-    <button class="btn btn-primary" onclick="openModal('in')">+ 入库</button>
-    <button class="btn btn-warn" onclick="openModal('out')">- 出库</button>
+    <button class="btn btn-primary" onclick="handleAuthAction('in')">+ 入库</button>
+    <button class="btn btn-warn" onclick="handleAuthAction('out')">- 出库</button>
   </div>
 </header>
 
@@ -294,7 +293,7 @@ td {
     <div class="card" style="overflow:hidden">
       <div style="padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <strong>库存总览</strong><span class="chip" id="countChip">51 项</span>
-        <span style="flex:1"></span><span class="hint">点击行可快捷出库 · 双击库存可手调</span>
+        <span style="flex:1"></span><span class="hint" id="authHintText">🔒 当前为只读模式，需输入密码解锁操作</span>
       </div>
       <div class="table-wrap">
         <table>
@@ -337,6 +336,59 @@ td {
   </div>
 </div>
 
+<!-- Modal 密码验证与权限管理 -->
+<div class="modal" id="authModal">
+  <div class="sheet">
+    <header>
+      <div><strong style="font-size:15px">🔐 店长权限验证</strong><div class="hint">验证密码以获得修改与出入库权限</div></div>
+      <button class="btn btn-ghost mini" onclick="closeAuthModal()">✕</button>
+    </header>
+    <div class="sheet-body">
+      <div id="authStatusBox" style="background:#fef2f2;border:1px solid #fecaca;padding:12px;border-radius:10px;margin-bottom:12px;font-size:13px">
+        <strong>🔒 当前状态：未授权（只读）</strong><br>
+        <span class="hint" style="color:#991b1b">外人和店员只能查看，无法修改库存。请输入店长密码解锁。</span>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <label style="font-weight:700;font-size:13px">输入操作密码（初始默认：8888）</label>
+        <input type="password" id="inputPin" class="input" placeholder="请输入店长密码" style="width:100%;margin-top:4px" onkeydown="if(event.key==='Enter') verifyAndUnlock()">
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:16px">
+        <button class="btn btn-ghost mini" onclick="openChangePinModal()">修改店长密码</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="closeAuthModal()">取消</button>
+          <button class="btn btn-primary" onclick="verifyAndUnlock()">🔓 验证并解锁</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 修改密码 -->
+<div class="modal" id="changePinModal">
+  <div class="sheet">
+    <header>
+      <div><strong style="font-size:15px">🔑 修改店长操作密码</strong></div>
+      <button class="btn btn-ghost mini" onclick="closeChangePinModal()">✕</button>
+    </header>
+    <div class="sheet-body">
+      <div style="margin-bottom:10px">
+        <label class="hint">当前旧密码</label>
+        <input type="password" id="oldPin" class="input" style="width:100%;margin-top:4px" placeholder="默认初始为 8888">
+      </div>
+      <div style="margin-bottom:10px">
+        <label class="hint">新密码</label>
+        <input type="password" id="newPin" class="input" style="width:100%;margin-top:4px" placeholder="请输入 4-16 位新密码">
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+        <button class="btn btn-ghost" onclick="closeChangePinModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveNewPin()">确认修改</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal 操作出入库 -->
 <div class="modal" id="modal">
   <div class="sheet">
@@ -370,10 +422,6 @@ td {
           <input id="mNote" class="input" placeholder="如：零售/进货" style="width:100%;margin-top:4px">
         </div>
       </div>
-      <div id="pinBox" style="display:none;margin-top:10px">
-        <label class="hint" style="color:var(--brand);font-weight:700">🔐 操作密码（店长权限验证）</label>
-        <input type="password" id="mPin" class="input" placeholder="请输入操作密码" style="width:100%;margin-top:4px">
-      </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
         <button class="btn btn-ghost" onclick="closeModal()">取消</button>
         <button class="btn btn-primary" id="mSubmit" onclick="submitModal()">确定</button>
@@ -382,37 +430,23 @@ td {
   </div>
 </div>
 
-<!-- Modal 云端协同设置 -->
+<!-- Modal 云端数据库设置 -->
 <div class="modal" id="cloudModal">
   <div class="sheet">
     <header>
-      <div><strong style="font-size:15px">☁️ Supabase 专属云端数据库设置</strong><div class="hint">全店多台手机实时同步同一套总账</div></div>
+      <div><strong style="font-size:15px">☁️ Supabase 云端数据库状态</strong></div>
       <button class="btn btn-ghost mini" onclick="closeCloudModal()">✕</button>
     </header>
     <div class="sheet-body">
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:10px;margin-bottom:14px;font-size:13px;line-height:1.5">
-        <strong style="color:#15803d">✅ 专属 Supabase 项目已预装接入！</strong><br>
-        您的云端地址：<code style="background:#fff;padding:2px 4px;border-radius:4px;font-size:11px">https://ahruaqzjhragymgcgenk.supabase.co</code><br>
-        多台手机打开即可自动双向实时同步。
+        <strong style="color:#15803d">✅ Supabase 云端数据库已连接！</strong><br>
+        项目地址：<code style="background:#fff;padding:2px 4px;border-radius:4px;font-size:11px">https://ahruaqzjhragymgcgenk.supabase.co</code><br>
+        全店手机/电脑均已实现双向实时云端同步。
       </div>
 
-      <div style="margin-bottom:12px">
-        <label style="font-weight:700;font-size:13px">1. 🔐 店长防乱改密码（可选）</label>
-        <input type="password" id="cfgStorePin" class="input" placeholder="留空则直接出入库；设置后他人无密码无法修改" style="width:100%;margin-top:4px">
-        <div class="hint" style="margin-top:4px">设置后，店员/访客在没有密码的情况下无法修改库存，确保账目准确。</div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div style="margin-bottom:12px">
-        <label style="font-weight:700;font-size:13px">2. Supabase 项目配置</label>
-        <input id="cfgSupaUrl" class="input" style="width:100%;margin-top:4px" value="https://ahruaqzjhragymgcgenk.supabase.co">
-        <input id="cfgSupaKey" class="input" style="width:100%;margin-top:6px;font-size:11px" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFocnVhcXpqaHJhZ3ltZ2NnZW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5NDYwODUsImV4cCI6MjEwMzUyMjA4NX0.BYRsbeF9GVY0lcjkfi3-G8KWP-z8c9jWCsUXmLY7t4c">
-      </div>
-
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px">
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
         <button class="btn btn-ghost" onclick="closeCloudModal()">关闭</button>
-        <button class="btn btn-primary" onclick="saveCloudConfig()">💾 保存并立即同步</button>
+        <button class="btn btn-primary" onclick="pullFromCloud(true); closeCloudModal();">🔄 立即刷新云端最新数据</button>
       </div>
     </div>
   </div>
@@ -985,17 +1019,17 @@ const DEFAULT_PRODUCTS = [
 ];
 
 const LS_P = 'renxin_products_v4', LS_T = 'renxin_tx_v4';
-const LS_CFG = 'renxin_cloud_cfg_v2';
+const LS_PIN = 'renxin_store_pin_v1';
+const LS_SESSION = 'renxin_auth_session_v1';
+
 let products = [], tx = [];
 let mode = 'in';
+let isAuthorized = false;
+let storePin = '8888'; // 默认初始店长密码
 
-// 默认已预置接入用户的 Supabase 专属数据库
-let cloudConfig = {
-  enabled: true,
-  pin: '',
-  supaUrl: 'https://ahruaqzjhragymgcgenk.supabase.co',
-  supaKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFocnVhcXpqaHJhZ3ltZ2NnZW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5NDYwODUsImV4cCI6MjEwMzUyMjA4NX0.BYRsbeF9GVY0lcjkfi3-G8KWP-z8c9jWCsUXmLY7t4c'
-};
+// Supabase 云端配置
+const supaUrl = 'https://ahruaqzjhragymgcgenk.supabase.co';
+const supaKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFocnVhcXpqaHJhZ3ltZ2NnZW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5NDYwODUsImV4cCI6MjEwMzUyMjA4NX0.BYRsbeF9GVY0lcjkfi3-G8KWP-z8c9jWCsUXmLY7t4c';
 
 let isSyncing = false;
 let autoSyncTimer = null;
@@ -1010,72 +1044,132 @@ function safeRemove(k){
   try { localStorage.removeItem(k); } catch(e){ }
 }
 
-function loadCloudConfig(){
-  const raw = safeGet(LS_CFG);
-  if(raw){
-    try {
-      const d = JSON.parse(raw);
-      if(d && typeof d === 'object'){
-        cloudConfig = Object.assign(cloudConfig, d);
-      }
-    } catch(e){ }
-  }
-}
-
-function saveCloudConfigToStorage(){
-  safeSet(LS_CFG, JSON.stringify(cloudConfig));
-  updateCloudUI();
-}
-
-function updateCloudUI(){
-  const dot = document.getElementById('cloudDot');
-  const txt = document.getElementById('cloudStatusText');
-  if(!dot || !txt) return;
-  if(cloudConfig.enabled){
-    dot.className = 'dot-indicator dot-green';
-    txt.textContent = '☁️ 云端实时同步中';
+function loadAuth(){
+  const savedPin = safeGet(LS_PIN);
+  if(savedPin) storePin = savedPin;
+  const sess = safeGet(LS_SESSION);
+  if(sess === 'unlocked_' + storePin){
+    isAuthorized = true;
   } else {
-    dot.className = 'dot-indicator dot-gray';
-    txt.textContent = '☁️ 单机模式';
+    isAuthorized = false;
   }
+  updateAuthUI();
+}
+
+function updateAuthUI(){
+  const btn = document.getElementById('authBtn');
+  const icon = document.getElementById('authIcon');
+  const txt = document.getElementById('authText');
+  const hint = document.getElementById('authHintText');
+  if(!btn) return;
+  if(isAuthorized){
+    btn.className = 'btn btn-unlocked';
+    icon.textContent = '🔓';
+    txt.textContent = '店长已解锁';
+    if(hint) hint.textContent = '🔓 已解锁店长权限 · 可自由出入库与手调库存';
+  } else {
+    btn.className = 'btn btn-lock';
+    icon.textContent = '🔒';
+    txt.textContent = '只读锁定';
+    if(hint) hint.textContent = '🔒 当前为只读模式 · 修改需输入店长密码';
+  }
+}
+
+function toggleAuthModal(){
+  if(isAuthorized){
+    if(confirm('当前已解锁店长权限。是否切换回「🔒 只读锁定状态」？')){
+      isAuthorized = false;
+      safeRemove(LS_SESSION);
+      updateAuthUI();
+    }
+  } else {
+    openAuthModal();
+  }
+}
+
+function openAuthModal(){
+  document.getElementById('inputPin').value = '';
+  document.getElementById('authModal').classList.add('open');
+  setTimeout(function(){ document.getElementById('inputPin').focus(); }, 50);
+}
+
+function closeAuthModal(){
+  document.getElementById('authModal').classList.remove('open');
+}
+
+function verifyAndUnlock(){
+  const val = (document.getElementById('inputPin').value || '').trim();
+  if(val === storePin){
+    isAuthorized = true;
+    safeSet(LS_SESSION, 'unlocked_' + storePin);
+    updateAuthUI();
+    closeAuthModal();
+    alert('🎉 密码验证成功！已解锁店长出入库与修改权限。');
+  } else {
+    alert('❌ 密码错误！请重新输入（默认初始密码：8888）');
+    document.getElementById('inputPin').value = '';
+    document.getElementById('inputPin').focus();
+  }
+}
+
+function openChangePinModal(){
+  closeAuthModal();
+  document.getElementById('oldPin').value = '';
+  document.getElementById('newPin').value = '';
+  document.getElementById('changePinModal').classList.add('open');
+}
+
+function closeChangePinModal(){
+  document.getElementById('changePinModal').classList.remove('open');
+}
+
+function saveNewPin(){
+  const oldVal = (document.getElementById('oldPin').value || '').trim();
+  const newVal = (document.getElementById('newPin').value || '').trim();
+  if(oldVal !== storePin){
+    return alert('旧密码错误，无法修改！');
+  }
+  if(!newVal || newVal.length < 4){
+    return alert('新密码至少需要 4 位字符！');
+  }
+  storePin = newVal;
+  safeSet(LS_PIN, storePin);
+  safeSet(LS_SESSION, 'unlocked_' + storePin);
+  isAuthorized = true;
+  updateAuthUI();
+  closeChangePinModal();
+  alert('✅ 店长操作密码修改成功！新密码为：' + storePin);
+}
+
+// 权限拦截入口
+function requireAuth(callback){
+  if(isAuthorized){
+    callback();
+  } else {
+    openAuthModal();
+  }
+}
+
+function handleAuthAction(type, pid){
+  requireAuth(function(){
+    openModal(type, pid);
+  });
 }
 
 function openCloudModal(){
-  loadCloudConfig();
-  document.getElementById('cfgStorePin').value = cloudConfig.pin || '';
-  document.getElementById('cfgSupaUrl').value = cloudConfig.supaUrl || 'https://ahruaqzjhragymgcgenk.supabase.co';
-  document.getElementById('cfgSupaKey').value = cloudConfig.supaKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFocnVhcXpqaHJhZ3ltZ2NnZW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5NDYwODUsImV4cCI6MjEwMzUyMjA4NX0.BYRsbeF9GVY0lcjkfi3-G8KWP-z8c9jWCsUXmLY7t4c';
   document.getElementById('cloudModal').classList.add('open');
 }
-
 function closeCloudModal(){
   document.getElementById('cloudModal').classList.remove('open');
 }
 
-function saveCloudConfig(){
-  const pin = (document.getElementById('cfgStorePin').value || '').trim();
-  const supaUrl = (document.getElementById('cfgSupaUrl').value || '').trim();
-  const supaKey = (document.getElementById('cfgSupaKey').value || '').trim();
-  
-  cloudConfig = {
-    enabled: true,
-    pin: pin,
-    supaUrl: supaUrl || 'https://ahruaqzjhragymgcgenk.supabase.co',
-    supaKey: supaKey
-  };
-  saveCloudConfigToStorage();
-  closeCloudModal();
-  pullFromCloud(true);
-  startAutoSync();
-}
-
 async function pushToCloud(){
-  if(!cloudConfig.enabled || isSyncing) return;
+  if(isSyncing) return;
   const dot = document.getElementById('cloudDot');
   if(dot) dot.className = 'dot-indicator dot-orange';
   isSyncing = true;
   try {
-    const url = cloudConfig.supaUrl.replace(/\/+$/, '') + '/rest/v1/inventory_data';
+    const url = supaUrl.replace(/\/+$/, '') + '/rest/v1/inventory_data';
     const payload = [{
       id: 'renxin_master',
       data: { products: products, tx: tx },
@@ -1085,8 +1179,8 @@ async function pushToCloud(){
     await fetch(url, {
       method: 'POST',
       headers: {
-        'apikey': cloudConfig.supaKey,
-        'Authorization': 'Bearer ' + cloudConfig.supaKey,
+        'apikey': supaKey,
+        'Authorization': 'Bearer ' + supaKey,
         'Content-Type': 'application/json',
         'Prefer': 'resolution=merge-duplicates'
       },
@@ -1096,18 +1190,19 @@ async function pushToCloud(){
     console.warn('Supabase push error:', e);
   } finally {
     isSyncing = false;
-    updateCloudUI();
+    const dot2 = document.getElementById('cloudDot');
+    if(dot2) dot2.className = 'dot-indicator dot-green';
   }
 }
 
 async function pullFromCloud(force){
-  if(!cloudConfig.enabled || (isSyncing && !force)) return;
+  if(isSyncing && !force) return;
   try {
-    const url = cloudConfig.supaUrl.replace(/\/+$/, '') + '/rest/v1/inventory_data?id=eq.renxin_master&select=*';
+    const url = supaUrl.replace(/\/+$/, '') + '/rest/v1/inventory_data?id=eq.renxin_master&select=*';
     const res = await fetch(url, {
       headers: {
-        'apikey': cloudConfig.supaKey,
-        'Authorization': 'Bearer ' + cloudConfig.supaKey,
+        'apikey': supaKey,
+        'Authorization': 'Bearer ' + supaKey,
         'Accept': 'application/json'
       }
     });
@@ -1130,22 +1225,18 @@ async function pullFromCloud(force){
     }
   } catch(e){
     console.warn('Supabase pull error:', e);
-  } finally {
-    updateCloudUI();
   }
 }
 
 function startAutoSync(){
   if(autoSyncTimer) clearInterval(autoSyncTimer);
-  if(cloudConfig.enabled){
-    autoSyncTimer = setInterval(function(){
-      pullFromCloud(false);
-    }, 4000);
-  }
+  autoSyncTimer = setInterval(function(){
+    pullFromCloud(false);
+  }, 4000);
 }
 
 function load(){
-  loadCloudConfig();
+  loadAuth();
   const p = safeGet(LS_P), t = safeGet(LS_T);
   if(p){
     try { products = JSON.parse(p); } catch(e){ products = []; }
@@ -1209,12 +1300,14 @@ function init(){
   document.getElementById('mProduct').addEventListener('change', syncPriceHint);
   render();
   renderHistory();
-  document.getElementById('importFile').addEventListener('change', onImport);
-  updateCloudUI();
-  if(cloudConfig.enabled){
-    pullFromCloud(true);
-    startAutoSync();
-  }
+  document.getElementById('importFile').addEventListener('change', function(e){
+    requireAuth(function(){
+      onImport(e);
+    });
+  });
+  
+  pullFromCloud(true);
+  startAutoSync();
 }
 
 function syncPriceHint(){
@@ -1263,13 +1356,13 @@ function render(){
       '<td>' + stockPill(p) + '<div class="hint" style="margin-top:2px">阈值:' + p.low + p.unit + '</div></td>' +
       '<td>' +
         '<div class="actions">' +
-          '<button class="btn btn-ok mini" onclick="quick(\'in\',\'' + p.id + '\')">+入库</button>' +
-          '<button class="btn btn-warn mini" onclick="quick(\'out\',\'' + p.id + '\')">-出库</button>' +
+          '<button class="btn btn-ok mini" onclick="handleAuthAction(\'in\',\'' + p.id + '\')">+入库</button>' +
+          '<button class="btn btn-warn mini" onclick="handleAuthAction(\'out\',\'' + p.id + '\')">-出库</button>' +
           '<button class="btn btn-ghost mini" onclick="editLow(\'' + p.id + '\')">设阈值</button>' +
         '</div>' +
       '</td>';
     tr.addEventListener('click', function(e){
-      if(e.target.tagName !== 'BUTTON') quick('out', p.id);
+      if(e.target.tagName !== 'BUTTON') handleAuthAction('out', p.id);
     });
     tb.appendChild(tr);
   });
@@ -1323,20 +1416,6 @@ function render(){
   document.getElementById('topRestock').textContent = topI ? (topI[0] + ' · ' + topI[1].toFixed(1)) : '暂无数据';
 }
 
-function quick(type, pid){
-  openModal(type, pid);
-}
-
-function checkPinPermission(){
-  if(!cloudConfig.pin) return true;
-  const inputPin = document.getElementById('mPin').value;
-  if(inputPin !== cloudConfig.pin){
-    alert('密码错误！只有店长或获授权店员才能操作出入库。');
-    return false;
-  }
-  return true;
-}
-
 function openModal(type, pid){
   mode = type;
   const m = document.getElementById('modal');
@@ -1349,12 +1428,6 @@ function openModal(type, pid){
   document.getElementById('mQty').value = '';
   document.getElementById('mNote').value = '';
   document.getElementById('mPrice').value = '';
-  document.getElementById('mPin').value = '';
-  
-  const pinBox = document.getElementById('pinBox');
-  if(pinBox){
-    pinBox.style.display = cloudConfig.pin ? 'block' : 'none';
-  }
   
   syncPriceHint();
   m.classList.add('open');
@@ -1366,7 +1439,10 @@ function closeModal(){
 }
 
 async function submitModal(){
-  if(!checkPinPermission()) return;
+  if(!isAuthorized){
+    alert('权限已被锁定，请先输入店长密码解锁！');
+    return openAuthModal();
+  }
   const pid = document.getElementById('mProduct').value;
   const qty = parseFloat(document.getElementById('mQty').value);
   const price = parseFloat(document.getElementById('mPrice').value);
@@ -1404,53 +1480,49 @@ async function submitModal(){
 }
 
 async function editStock(pid){
-  if(cloudConfig.pin){
-    const pin = prompt('请输入店长操作密码以修改库存：');
-    if(pin !== cloudConfig.pin) return alert('密码错误，无权修改！');
-  }
-  const pr = products.find(function(p){ return p.id === pid; });
-  const v = prompt('手调库存 — ' + pr.name + '（当前库存：' + pr.stock + ' ' + pr.unit + '）\n请输入调整后的新库存数量：', pr.stock);
-  if(v === null) return;
-  const n = parseFloat(v);
-  if(isNaN(n) || n < 0) return alert('请输入有效非负数量');
-  const diff = n - pr.stock;
-  pr.stock = Math.round(n * 10) / 10;
-  saveProducts();
-  if(diff !== 0){
-    tx.push({
-      id: 't' + Date.now(),
-      ts: Date.now(),
-      type: (diff > 0 ? 'in' : 'out'),
-      pid: pid,
-      pname: pr.name,
-      qty: Math.round(Math.abs(diff) * 10) / 10,
-      price: pr.price,
-      total: Math.round(Math.abs(diff) * pr.price * 100) / 100,
-      after: pr.stock,
-      op: '店长',
-      note: '人工手动校正库存'
-    });
-    saveTx();
-  }
-  render();
-  renderHistory();
-  await pushToCloud();
+  requireAuth(function(){
+    const pr = products.find(function(p){ return p.id === pid; });
+    const v = prompt('手调库存 — ' + pr.name + '（当前库存：' + pr.stock + ' ' + pr.unit + '）\n请输入调整后的新库存数量：', pr.stock);
+    if(v === null) return;
+    const n = parseFloat(v);
+    if(isNaN(n) || n < 0) return alert('请输入有效非负数量');
+    const diff = n - pr.stock;
+    pr.stock = Math.round(n * 10) / 10;
+    saveProducts();
+    if(diff !== 0){
+      tx.push({
+        id: 't' + Date.now(),
+        ts: Date.now(),
+        type: (diff > 0 ? 'in' : 'out'),
+        pid: pid,
+        pname: pr.name,
+        qty: Math.round(Math.abs(diff) * 10) / 10,
+        price: pr.price,
+        total: Math.round(Math.abs(diff) * pr.price * 100) / 100,
+        after: pr.stock,
+        op: '店长',
+        note: '人工手动校正库存'
+      });
+      saveTx();
+    }
+    render();
+    renderHistory();
+    pushToCloud();
+  });
 }
 
 function editLow(pid){
-  if(cloudConfig.pin){
-    const pin = prompt('请输入店长操作密码以修改阈值：');
-    if(pin !== cloudConfig.pin) return alert('密码错误，无权修改！');
-  }
-  const pr = products.find(function(p){ return p.id === pid; });
-  const v = prompt('设置预警阈值 — ' + pr.name + '（当前阈值：' + pr.low + ' ' + pr.unit + '）', pr.low);
-  if(v === null) return;
-  const n = parseFloat(v);
-  if(isNaN(n) || n < 0) return alert('请输入有效数字');
-  pr.low = n;
-  saveProducts();
-  render();
-  pushToCloud();
+  requireAuth(function(){
+    const pr = products.find(function(p){ return p.id === pid; });
+    const v = prompt('设置预警阈值 — ' + pr.name + '（当前阈值：' + pr.low + ' ' + pr.unit + '）', pr.low);
+    if(v === null) return;
+    const n = parseFloat(v);
+    if(isNaN(n) || n < 0) return alert('请输入有效数字');
+    pr.low = n;
+    saveProducts();
+    render();
+    pushToCloud();
+  });
 }
 
 function renderHistory(){
@@ -1546,18 +1618,22 @@ function onImport(e){
 }
 
 function clearHistory(){
-  if(!confirm('确定清空全部流水明细？库存结存不会受到影响。')) return;
-  tx = [];
-  saveTx();
-  render();
-  renderHistory();
-  pushToCloud();
+  requireAuth(function(){
+    if(!confirm('确定清空全部流水明细？库存结存不会受到影响。')) return;
+    tx = [];
+    saveTx();
+    render();
+    renderHistory();
+    pushToCloud();
+  });
 }
 
 function resetDemo(){
-  if(!confirm('确定重置为 51 味道地药材盘点初始库存？')) return;
-  try { localStorage.clear(); } catch(e){}
-  location.reload();
+  requireAuth(function(){
+    if(!confirm('确定重置为 51 味道地药材盘点初始库存？')) return;
+    try { localStorage.clear(); } catch(e){}
+    location.reload();
+  });
 }
 
 function openHistory(){
