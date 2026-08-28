@@ -2,67 +2,240 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>仁心养生行 · 出入库管理</title>
 <style>
-:root{--bg:#fdf8f0;--card:#fff;--ink:#2b1d12;--muted:#8a755f;--line:#e9ddd0;--brand:#8b1a1a;--brand2:#c1440e;--ok:#1a7a3a;--warn:#b7790e;--danger:#9b2226;--radius:14px;--shadow:0 6px 24px rgba(43,29,18,.08)}
-*{box-sizing:border-box}body{margin:0;font-family:"Noto Serif SC","PingFang SC","Microsoft YaHei",serif;background:var(--bg);color:var(--ink)}
-header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,#fff 70%,#fff8 100%);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-.hdr{max-width:1280px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.logo{width:44px;height:44px;border-radius:10px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:900;letter-spacing:1px;border:2px solid #5a0f0f}
-.hdr h1{margin:0;font-size:20px;letter-spacing:2px}
-.hdr small{color:var(--muted);font-size:12px;letter-spacing:1px}
-.hdr .spacer{flex:1}
-.badge{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:12px;color:var(--muted)}
-.btn{appearance:none;border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
-.btn-primary{background:var(--brand);color:#fff}
-.btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
-.btn-ok{background:var(--ok);color:#fff}
-.btn-warn{background:var(--brand2);color:#fff}
-.wrap{max-width:1280px;margin:18px auto;padding:0 20px 40px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-.stat{padding:16px}
-.stat .k{font-size:12px;color:var(--muted);letter-spacing:1px}
-.stat .v{font-size:26px;font-weight:900;margin:6px 0}
-.stat .sub{font-size:12px;color:var(--muted)}
-.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}
-.input,select{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;outline:none}
-.input:focus,select:focus{border-color:#c9a87a;box-shadow:0 0 0 3px #f3e6d3}
-.layout{display:grid;grid-template-columns:1.65fr .9fr;gap:16px}
-@media(max-width:1050px){.layout{grid-template-columns:1fr}}
-.table-wrap{overflow:auto}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th{position:sticky;top:0;background:#fdf2e2;z-index:1;text-align:left;padding:10px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
-td{padding:10px;border-bottom:1px solid #f0e6d8;vertical-align:middle}
-.stock{font-weight:800}
-.pill{padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid transparent}
-.pill-ok{background:#e8f5e9;color:#1a7a3a;border-color:#c8e6c9}
-.pill-warn{background:#fff3e0;color:#b7790e;border-color:#ffe0b2}
-.pill-danger{background:#fdecea;color:#9b2226;border-color:#f5c6cb}
-.actions{display:flex;gap:6px;flex-wrap:wrap}
-.mini{padding:6px 10px;border-radius:8px;font-size:12px}
-.right{padding:16px;position:sticky;top:84px;align-self:start}
-.right h3{margin:4px 0 10px;font-size:15px}
-.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.kv .card{padding:12px}
-.log{max-height:420px;overflow:auto}
-.log-item{padding:10px 12px;border-bottom:1px dashed #eee;display:flex;gap:10px;align-items:center}
-.dot{width:8px;height:8px;border-radius:50%}
-.dot.in{background:var(--ok)} .dot.out{background:var(--danger)}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.38);display:none;place-items:center;padding:18px;z-index:50}
-.modal.open{display:grid}
-.sheet{width:min(560px,100%);background:#fff;border-radius:16px;border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden}
-.sheet header{position:static;background:#fff}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:560px){.grid2{grid-template-columns:1fr}}
-.hint{font-size:12px;color:var(--muted)}
-.divider{height:1px;background:var(--line);margin:12px 0}
-.chip{padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:12px}
+:root {
+  --bg: #fdf8f0;
+  --card: #ffffff;
+  --ink: #2b1d12;
+  --muted: #8a755f;
+  --line: #e9ddd0;
+  --brand: #8b1a1a;
+  --brand2: #c1440e;
+  --ok: #1a7a3a;
+  --warn: #b7790e;
+  --danger: #9b2226;
+  --radius: 14px;
+  --shadow: 0 4px 20px rgba(43,29,18,.06);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Noto Serif SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+}
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.hdr {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--brand);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  letter-spacing: 1px;
+  border: 2px solid #5a0f0f;
+  flex-shrink: 0;
+}
+.hdr h1 { margin: 0; font-size: 18px; letter-spacing: 1px; }
+.hdr small { color: var(--muted); font-size: 12px; display: block; }
+.hdr .spacer { flex: 1; }
+.badge {
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 12px;
+  color: var(--muted);
+}
+.btn {
+  appearance: none;
+  border: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: opacity .15s ease;
+}
+.btn:active { opacity: .75; }
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-ghost { background: #fff; border: 1px solid var(--line); color: var(--ink); }
+.btn-ok { background: var(--ok); color: #fff; }
+.btn-warn { background: var(--brand2); color: #fff; }
+
+.wrap {
+  max-width: 1280px;
+  margin: 14px auto;
+  padding: 0 16px 40px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 800px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.stat { padding: 14px; }
+.stat .k { font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+.stat .v { font-size: 22px; font-weight: 900; margin: 4px 0; }
+.stat .sub { font-size: 12px; color: var(--muted); }
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 14px 0;
+}
+.input, select {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  outline: none;
+  font-size: 14px;
+}
+.input:focus, select:focus {
+  border-color: #c9a87a;
+  box-shadow: 0 0 0 2px #f3e6d3;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 1.65fr .9fr;
+  gap: 14px;
+}
+@media (max-width: 960px) {
+  .layout { grid-template-columns: 1fr; }
+}
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 580px;
+}
+th {
+  position: sticky;
+  top: 0;
+  background: #fdf2e2;
+  z-index: 1;
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+td {
+  padding: 10px;
+  border-bottom: 1px solid #f0e6d8;
+  vertical-align: middle;
+}
+.stock {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--ink);
+}
+.pill {
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.pill-ok { background: #e8f5e9; color: #1a7a3a; border-color: #c8e6c9; }
+.pill-warn { background: #fff3e0; color: #b7790e; border-color: #ffe0b2; }
+.pill-danger { background: #fdecea; color: #9b2226; border-color: #f5c6cb; }
+.actions { display: flex; gap: 4px; flex-wrap: wrap; }
+.mini { padding: 5px 8px; border-radius: 6px; font-size: 11px; }
+.right { padding: 14px; position: sticky; top: 76px; align-self: start; }
+.right h3 { margin: 4px 0 10px; font-size: 14px; }
+.kv { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kv .card { padding: 10px; }
+.log { max-height: 360px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.log-item { padding: 8px 10px; border-bottom: 1px dashed #eee; display: flex; gap: 8px; align-items: center; font-size: 12px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot.in { background: var(--ok); } .dot.out { background: var(--danger); }
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: none;
+  place-items: center;
+  padding: 16px;
+  z-index: 50;
+}
+.modal.open { display: grid; }
+.sheet {
+  width: min(500px, 100%);
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  overflow: hidden;
+}
+.sheet header {
+  position: static;
+  background: #fff;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sheet-body { padding: 16px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 480px) {
+  .grid2 { grid-template-columns: 1fr; }
+}
+.hint { font-size: 12px; color: var(--muted); }
+.divider { height: 1px; background: var(--line); margin: 10px 0; }
+.chip {
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 11px;
+  white-space: nowrap;
+}
 </style>
 </head>
 <body>
@@ -75,7 +248,7 @@ td{padding:10px;border-bottom:1px solid #f0e6d8;vertical-align:middle}
     </div>
     <div class="spacer"></div>
     <span class="badge" id="todayBadge"></span>
-    <button class="btn btn-ghost" onclick="exportCSV()">导出流水 CSV</button>
+    <button class="btn btn-ghost" onclick="exportCSV()">导出 CSV</button>
     <button class="btn btn-ghost" onclick="exportJSON()">备份 JSON</button>
     <label class="btn btn-ghost" style="cursor:pointer">导入备份<input type="file" id="importFile" accept=".json" hidden></label>
     <button class="btn btn-primary" onclick="openModal('in')">+ 入库</button>
@@ -86,29 +259,27 @@ td{padding:10px;border-bottom:1px solid #f0e6d8;vertical-align:middle}
 <div class="wrap">
   <div class="stats">
     <div class="card stat"><div class="k">总 SKU</div><div class="v" id="sSku">51</div><div class="sub">在售药材种类</div></div>
-    <div class="card stat"><div class="k">总库存</div><div class="v" id="sStock">—</div><div class="sub" id="sStockSub">磅</div></div>
-    <div class="card stat"><div class="k">低库存预警</div><div class="v" id="sLow" style="color:var(--warn)">—</div><div class="sub">阈值 ≤5 磅</div></div>
+    <div class="card stat"><div class="k">总库存量</div><div class="v" id="sStock">—</div><div class="sub" id="sStockSub">51 SKU 实盘合计</div></div>
+    <div class="card stat"><div class="k">低库存预警</div><div class="v" id="sLow" style="color:var(--warn)">—</div><div class="sub">阈值预警项</div></div>
     <div class="card stat"><div class="k">今日流水</div><div class="v" id="sToday">—</div><div class="sub" id="sTodaySub">入库 / 出库</div></div>
   </div>
 
   <div class="toolbar">
-    <input id="q" class="input" placeholder="搜索 药材名 / 功效 / 分类" style="min-width:240px" oninput="render()">
+    <input id="q" class="input" placeholder="🔍 搜索 药材名 / 药性功效 / 分类" style="min-width:200px;flex:1" oninput="render()">
     <select id="cat" onchange="render()"><option value="">全部分类</option></select>
     <select id="stockFilter" onchange="render()"><option value="">全部库存</option><option value="low">仅低库存</option><option value="out">已售罄</option></select>
-    <span class="hint">点击行可快捷出入库 · 数据本地保存（localStorage）</span>
-    <span style="flex:1"></span>
-    <button class="btn btn-ghost" onclick="resetDemo()">重置演示库存</button>
+    <button class="btn btn-ghost" onclick="resetDemo()">重置为盘点初始库存</button>
   </div>
 
   <div class="layout">
     <div class="card" style="overflow:hidden">
-      <div style="padding:12px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div style="padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <strong>库存总览</strong><span class="chip" id="countChip">51 项</span>
-        <span style="flex:1"></span><span class="hint">双击数量可手调 · 出库不可超库存</span>
+        <span style="flex:1"></span><span class="hint">点击行可快捷出库 · 双击库存可手调</span>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>药材</th><th>分类</th><th>售价</th><th>库存</th><th>状态</th><th>操作</th></tr></thead>
+          <thead><tr><th>药材与药性</th><th>分类</th><th>售价</th><th>库存</th><th>状态</th><th>操作</th></tr></thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
@@ -118,62 +289,78 @@ td{padding:10px;border-bottom:1px solid #f0e6d8;vertical-align:middle}
       <h3>今日流水（最近10条）</h3>
       <div id="recent" class="log"></div>
       <div class="divider"></div>
-      <h3>快捷统计</h3>
+      <h3>快捷统计看板</h3>
       <div class="kv">
-        <div class="card"><div class="hint">最畅销（30天）</div><div id="topSeller" style="font-weight:800;margin-top:6px">—</div></div>
-        <div class="card"><div class="hint">最常补货</div><div id="topRestock" style="font-weight:800;margin-top:6px">—</div></div>
+        <div class="card"><div class="hint">最畅销（30天）</div><div id="topSeller" style="font-weight:800;margin-top:4px">—</div></div>
+        <div class="card"><div class="hint">最常补货</div><div id="topRestock" style="font-weight:800;margin-top:4px">—</div></div>
       </div>
-      <div style="margin-top:12px;display:flex;gap:8px">
-        <button class="btn btn-ghost" style="flex:1" onclick="openHistory()">查看完整流水 →</button>
+      <div style="margin-top:10px">
+        <button class="btn btn-ghost" style="width:100%" onclick="openHistory()">查看完整流水台账 ↓</button>
       </div>
-      <div class="hint" style="margin-top:10px">提示：出库自动扣减，入库自动增加，阈值可在行内手调。</div>
     </div>
   </div>
 
-  <div class="card" style="margin-top:16px;overflow:hidden" id="historyCard">
-    <div style="padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <strong>流水记录</strong>
+  <div class="card" style="margin-top:14px;overflow:hidden" id="historyCard">
+    <div style="padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <strong>出入库流水明细</strong>
       <select id="hType" onchange="renderHistory()"><option value="">全部类型</option><option value="in">入库</option><option value="out">出库</option></select>
-      <input id="hQ" class="input" placeholder="筛选 药材/备注/操作人" oninput="renderHistory()">
+      <input id="hQ" class="input" placeholder="筛选 药材/备注/经手人" oninput="renderHistory()">
       <input id="hDate" type="date" class="input" onchange="renderHistory()">
       <span style="flex:1"></span>
-      <button class="btn btn-ghost" onclick="clearHistory()">清空流水</button>
+      <button class="btn btn-ghost mini" onclick="clearHistory()">清空流水</button>
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>时间</th><th>类型</th><th>药材</th><th>数量</th><th>结存</th><th>单价</th><th>小计</th><th>操作人</th><th>备注</th></tr></thead>
+        <thead><tr><th>时间</th><th>类型</th><th>药材</th><th>数量</th><th>结存</th><th>单价</th><th>小计</th><th>经手人</th><th>备注</th></tr></thead>
         <tbody id="htbody"></tbody>
       </table>
     </div>
   </div>
-
-  <div class="hint" style="margin-top:10px">© 仁心养生行 · 本页数据仅保存在本机浏览器，换设备请用“备份 JSON”迁移。支持打印与 CSV 对账。</div>
 </div>
 
-<div id="modal" class="modal" onclick="if(event.target===this)closeModal()">
+<!-- Modal -->
+<div class="modal" id="modal">
   <div class="sheet">
-    <header style="padding:14px 16px;display:flex;align-items:center;gap:10px">
-      <strong id="mTitle">入库</strong><span class="hint" id="mHint">增加库存</span><span style="flex:1"></span><button class="btn btn-ghost" onclick="closeModal()">✕</button>
+    <header>
+      <div><strong id="mTitle" style="font-size:15px">出入库</strong><div class="hint" id="mHint">操作药材库存</div></div>
+      <button class="btn btn-ghost mini" onclick="closeModal()">✕</button>
     </header>
-    <div style="padding:16px">
-      <div class="grid2">
-        <label>药材<select id="mProduct"></select></label>
-        <label>数量（磅）<input id="mQty" type="number" step="0.5" min="0.5" class="input" placeholder="例如 5"></label>
-        <label>单价（$/磅）<input id="mPrice" type="number" step="0.01" class="input" placeholder="自动带入售价"></label>
-        <label>操作人<input id="mOp" class="input" placeholder="例如 店长 / 小李" value="店长"></label>
+    <div class="sheet-body">
+      <div style="margin-bottom:10px">
+        <label class="hint">选择药材</label>
+        <select id="mProduct" class="input" style="width:100%;margin-top:4px"></select>
+        <div class="hint" id="mStockHint" style="margin-top:4px;color:var(--brand2)"></div>
       </div>
-      <label style="display:block;margin-top:10px">备注<input id="mNote" class="input" style="width:100%" placeholder="供应商 / 客户 / 批次 等"></label>
-      <div class="hint" id="mStockHint" style="margin-top:8px"></div>
-      <div style="display:flex;gap:10px;margin-top:14px">
-        <button id="mSubmit" class="btn btn-primary" style="flex:1" onclick="submitModal()">确认入库</button>
+      <div class="grid2">
+        <div>
+          <label class="hint">数量</label>
+          <input type="number" step="0.5" id="mQty" class="input" placeholder="输入变动数量" style="width:100%;margin-top:4px">
+        </div>
+        <div>
+          <label class="hint">单价 ($)</label>
+          <input type="number" step="0.1" id="mPrice" class="input" placeholder="默认售价" style="width:100%;margin-top:4px">
+        </div>
+      </div>
+      <div class="grid2" style="margin-top:10px">
+        <div>
+          <label class="hint">经手人</label>
+          <input id="mOp" class="input" value="店长" style="width:100%;margin-top:4px">
+        </div>
+        <div>
+          <label class="hint">备注说明</label>
+          <input id="mNote" class="input" placeholder="如：零售/进货" style="width:100%;margin-top:4px">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
         <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" id="mSubmit" onclick="submitModal()">确定</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-const DEFAULT_PRODUCTS=[
+const DEFAULT_PRODUCTS = [
   {
     "id": "p1",
     "name": "大号枸杞子",
@@ -737,223 +924,417 @@ const DEFAULT_PRODUCTS=[
     "low": 5
   }
 ];
-const LS_P='renxin_products_v3', LS_T='renxin_tx_v3';
-let products=[], tx=[];
-let mode='in';
-function load(){
-  // Clear any legacy v1/v2 storage
-  localStorage.removeItem('renxin_products');
-  localStorage.removeItem('renxin_products_v2');
-  localStorage.removeItem('renxin_tx');
-  localStorage.removeItem('renxin_tx_v2');
 
-  const p = localStorage.getItem(LS_P), t = localStorage.getItem(LS_T);
-  if(p){ try{ products = JSON.parse(p); }catch(e){ products = []; } }
+const LS_P = 'renxin_products_v4', LS_T = 'renxin_tx_v4';
+let products = [], tx = [];
+let mode = 'in';
+
+function safeGet(k){
+  try { return localStorage.getItem(k); } catch(e){ return null; }
+}
+function safeSet(k, v){
+  try { localStorage.setItem(k, v); } catch(e){ }
+}
+function safeRemove(k){
+  try { localStorage.removeItem(k); } catch(e){ }
+}
+
+function load(){
+  safeRemove('renxin_products');
+  safeRemove('renxin_products_v2');
+  safeRemove('renxin_products_v3');
+  safeRemove('renxin_tx');
+  safeRemove('renxin_tx_v2');
+  safeRemove('renxin_tx_v3');
+
+  const p = safeGet(LS_P), t = safeGet(LS_T);
+  if(p){
+    try { products = JSON.parse(p); } catch(e){ products = []; }
+  }
   
-  // If no products or if old cache with fewer than 51 items, force load all 51 products!
-  if(!products.length || products.length < DEFAULT_PRODUCTS.length){
-    products = DEFAULT_PRODUCTS.map(pr => ({
-      ...pr,
-      stock: (pr.stock !== undefined) ? pr.stock : 0,
-      low: pr.low || 5
-    }));
+  if(!Array.isArray(products) || products.length < DEFAULT_PRODUCTS.length){
+    products = DEFAULT_PRODUCTS.map(function(pr){
+      return Object.assign({}, pr, {
+        stock: (typeof pr.stock === 'number') ? pr.stock : 0,
+        low: pr.low || 5
+      });
+    });
     saveProducts();
     const now = Date.now();
     tx = [
       {id:'t1', ts:now-86400000*2, type:'in', pid:'p1', pname:'大号枸杞子', qty:8.5, price:15, total:127.5, after:8.5, op:'店长', note:'手写单盘点初始入库'},
       {id:'t2', ts:now-86400000*1.5, type:'in', pid:'p26', pname:'精选天麻', qty:10, price:35, total:350, after:10, op:'店长', note:'手写单盘点初始入库'},
-      {id:'t3', ts:now-86400000*1, type:'in', pid:'p47', pname:'原果大号罗汉果', qty:30, price:1.5, total:45, after:30, op:'店长', note:'手写单盘点初始入库'},
+      {id:'t3', ts:now-86400000*1, type:'in', pid:'p47', pname:'原果大号罗汉果', qty:30, price:1.5, total:45, after:30, op:'店长', note:'手写单盘点初始入库'}
     ];
     saveTx();
   }
-  if(t){ try{ tx = JSON.parse(t); }catch(e){ tx = []; } }
+  if(t){
+    try { tx = JSON.parse(t); } catch(e){ tx = []; }
+  }
 }
+
+function saveProducts(){
+  safeSet(LS_P, JSON.stringify(products));
 }
-function saveProducts(){localStorage.setItem(LS_P, JSON.stringify(products))}
-function saveTx(){localStorage.setItem(LS_T, JSON.stringify(tx))}
+function saveTx(){
+  safeSet(LS_T, JSON.stringify(tx));
+}
+
 function init(){
   load();
-  document.getElementById('todayBadge').textContent=new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
-  const cats=[...new Set(products.map(p=>p.category))]; const sel=document.getElementById('cat');
-  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o)});
-  const mp=document.getElementById('mProduct');
-  products.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;mp.appendChild(o)});
+  try {
+    document.getElementById('todayBadge').textContent = new Date().toLocaleDateString('zh-CN', {year:'numeric', month:'long', day:'numeric', weekday:'short'});
+  } catch(e){
+    document.getElementById('todayBadge').textContent = '仁心养生行';
+  }
+  
+  const cats = [...new Set(products.map(function(p){ return p.category; }))];
+  const sel = document.getElementById('cat');
+  sel.innerHTML = '<option value="">全部分类</option>';
+  cats.forEach(function(c){
+    const o = document.createElement('option');
+    o.value = c;
+    o.textContent = c;
+    sel.appendChild(o);
+  });
+  
+  const mp = document.getElementById('mProduct');
+  mp.innerHTML = '';
+  products.forEach(function(p){
+    const o = document.createElement('option');
+    o.value = p.id;
+    o.textContent = p.name + ' (现存: ' + p.stock + p.unit + ')';
+    mp.appendChild(o);
+  });
+  
   document.getElementById('mProduct').addEventListener('change', syncPriceHint);
-  render(); renderHistory();
+  render();
+  renderHistory();
   document.getElementById('importFile').addEventListener('change', onImport);
 }
+
 function syncPriceHint(){
-  const pid=document.getElementById('mProduct').value;
-  const pr=products.find(x=>x.id===pid);
+  const pid = document.getElementById('mProduct').value;
+  const pr = products.find(function(x){ return x.id === pid; });
   if(!pr) return;
-  document.getElementById('mPrice').placeholder=pr.price;
-  document.getElementById('mStockHint').textContent=`当前库存：${pr.stock} ${pr.unit} · 阈值 ${pr.low}${pr.unit} · ${stockLabel(pr)}`;
+  document.getElementById('mPrice').placeholder = pr.price;
+  document.getElementById('mStockHint').textContent = '当前库存：' + pr.stock + ' ' + pr.unit + ' · 预警阈值：' + pr.low + pr.unit + ' · 状态：' + stockLabel(pr);
 }
+
 function stockLabel(pr){
-  if(pr.stock<=0) return '已售罄';
-  if(pr.stock<=pr.low) return '低库存预警';
+  if(pr.stock <= 0) return '已售罄';
+  if(pr.stock <= pr.low) return '低库存预警';
   return '库存正常';
 }
+
 function stockPill(pr){
-  if(pr.stock<=0) return '<span class="pill pill-danger">售罄</span>';
-  if(pr.stock<=pr.low) return '<span class="pill pill-warn">低库存</span>';
+  if(pr.stock <= 0) return '<span class="pill pill-danger">已售罄</span>';
+  if(pr.stock <= pr.low) return '<span class="pill pill-warn">低库存</span>';
   return '<span class="pill pill-ok">正常</span>';
 }
+
 function render(){
-  const q=(document.getElementById('q').value||'').trim().toLowerCase();
-  const cat=document.getElementById('cat').value;
-  const sf=document.getElementById('stockFilter').value;
-  let list=[...products];
-  if(q) list=list.filter(p=>[p.name,p.benefit,p.category,p.tag].join(' ').toLowerCase().includes(q));
-  if(cat) list=list.filter(p=>p.category===cat);
-  if(sf==='low') list=list.filter(p=>p.stock>0 && p.stock<=p.low);
-  if(sf==='out') list=list.filter(p=>p.stock<=0);
-  document.getElementById('countChip').textContent=list.length+' 项';
-  const tb=document.getElementById('tbody'); tb.innerHTML='';
-  list.forEach(p=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td><div style="font-weight:800">${p.name}</div><div class="hint">${p.benefit} · ${p.tag||''}</div></td>
-      <td><span class="chip">${p.category}</span></td>
-      <td>$${p.price}/${p.unit}</td>
-      <td><span class="stock" data-id="${p.id}" ondblclick="editStock('${p.id}')" title="双击手调库存">${p.stock}</span> ${p.unit}</td>
-      <td>${stockPill(p)} <span class="hint" style="margin-left:6px">阈${p.low}</span></td>
-      <td><div class="actions"><button class="btn btn-ok mini" onclick="quick('in','${p.id}')">入库</button><button class="btn btn-warn mini" onclick="quick('out','${p.id}')">出库</button><button class="btn btn-ghost mini" onclick="editLow('${p.id}')">阈值</button></div></td>`;
-    tr.addEventListener('click',e=>{if(e.target.tagName!=='BUTTON') quick('out',p.id)});
+  const q = (document.getElementById('q').value || '').trim().toLowerCase();
+  const cat = document.getElementById('cat').value;
+  const sf = document.getElementById('stockFilter').value;
+  let list = [...products];
+  if(q) list = list.filter(function(p){ return [p.name, p.benefit, p.category, p.tag || ''].join(' ').toLowerCase().includes(q); });
+  if(cat) list = list.filter(function(p){ return p.category === cat; });
+  if(sf === 'low') list = list.filter(function(p){ return p.stock > 0 && p.stock <= p.low; });
+  if(sf === 'out') list = list.filter(function(p){ return p.stock <= 0; });
+  
+  document.getElementById('countChip').textContent = list.length + ' 项';
+  const tb = document.getElementById('tbody');
+  tb.innerHTML = '';
+  
+  list.forEach(function(p){
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' +
+        '<div style="font-weight:800;font-size:14px">' + p.name + '</div>' +
+        '<div class="hint" style="margin-top:2px;color:#6b5847">' + p.benefit + ' · <span style="color:var(--brand2)">' + (p.tag || '') + '</span></div>' +
+      '</td>' +
+      '<td><span class="chip">' + p.category + '</span></td>' +
+      '<td style="font-weight:700;color:var(--brand)">$' + p.price + ' <small style="color:var(--muted)">/' + p.unit + '</small></td>' +
+      '<td><span class="stock" data-id="' + p.id + '" ondblclick="editStock(\'' + p.id + '\')" title="双击手调库存">' + p.stock + '</span> ' + p.unit + '</td>' +
+      '<td>' + stockPill(p) + '<div class="hint" style="margin-top:2px">阈值:' + p.low + p.unit + '</div></td>' +
+      '<td>' +
+        '<div class="actions">' +
+          '<button class="btn btn-ok mini" onclick="quick(\'in\',\'' + p.id + '\')">+入库</button>' +
+          '<button class="btn btn-warn mini" onclick="quick(\'out\',\'' + p.id + '\')">-出库</button>' +
+          '<button class="btn btn-ghost mini" onclick="editLow(\'' + p.id + '\')">设阈值</button>' +
+        '</div>' +
+      '</td>';
+    tr.addEventListener('click', function(e){
+      if(e.target.tagName !== 'BUTTON') quick('out', p.id);
+    });
     tb.appendChild(tr);
   });
-  // stats
-  const total=list.reduce((s,p)=>s+p.stock,0); // show all, not filtered, for total?
-  const totalAll=products.reduce((s,p)=>s+p.stock,0);
-  document.getElementById('sStock').textContent=totalAll.toFixed(1);
-  document.getElementById('sStockSub').textContent='51 SKU 实盘库存合计';
-  const low=products.filter(p=>p.stock>0 && p.stock<=p.low).length;
-  document.getElementById('sLow').textContent=low;
-  const todayStr=new Date().toDateString();
-  const todayTx=tx.filter(x=>new Date(x.ts).toDateString()===todayStr);
-  const tin=todayTx.filter(x=>x.type==='in').reduce((s,x)=>s+x.qty,0);
-  const tout=todayTx.filter(x=>x.type==='out').reduce((s,x)=>s+x.qty,0);
-  document.getElementById('sToday').textContent=todayTx.length? `${tin.toFixed(1)} / ${tout.toFixed(1)}` : '0 / 0';
-  document.getElementById('sTodaySub').textContent='今日 入库 / 出库（磅）';
-  // recent & top
-  const recent=[...tx].sort((a,b)=>b.ts-a.ts).slice(0,10);
-  const rc=document.getElementById('recent'); rc.innerHTML= recent.length? '' : '<div class="hint" style="padding:12px">暂无流水</div>';
-  recent.forEach(r=>{
-    const d=document.createElement('div'); d.className='log-item';
-    d.innerHTML=`<span class="dot ${r.type}"></span><div style="flex:1"><div style="font-weight:700">${r.pname} <span class="hint">${r.type==='in'?'+':''}${r.type==='out'?'-':''}${r.qty}${products.find(p=>p.id===r.pid)?.unit||'磅'}</span></div><div class="hint">${new Date(r.ts).toLocaleString('zh-CN')} · ${r.op} · ${r.note||'—'}</div></div><span class="pill ${r.type==='in'?'pill-ok':'pill-danger'}">${r.type==='in'?'入库':'出库'}</span>`;
+
+  // 统计指标
+  document.getElementById('sSku').textContent = products.length;
+  const totalAll = products.reduce(function(s, p){ return s + (typeof p.stock === 'number' ? p.stock : 0); }, 0);
+  document.getElementById('sStock').textContent = totalAll.toFixed(1);
+  document.getElementById('sStockSub').textContent = products.length + ' SKU 实盘合计';
+  
+  const lowCount = products.filter(function(p){ return p.stock > 0 && p.stock <= p.low; }).length;
+  document.getElementById('sLow').textContent = lowCount;
+  
+  const todayStr = new Date().toDateString();
+  const todayTx = tx.filter(function(x){ return new Date(x.ts).toDateString() === todayStr; });
+  const tin = todayTx.filter(function(x){ return x.type === 'in'; }).reduce(function(s, x){ return s + x.qty; }, 0);
+  const tout = todayTx.filter(function(x){ return x.type === 'out'; }).reduce(function(s, x){ return s + x.qty; }, 0);
+  document.getElementById('sToday').textContent = todayTx.length ? (tin.toFixed(1) + ' / ' + tout.toFixed(1)) : '0 / 0';
+  document.getElementById('sTodaySub').textContent = '今日 入库 / 出库';
+
+  // 最近流水
+  const recent = [...tx].sort(function(a, b){ return b.ts - a.ts; }).slice(0, 10);
+  const rc = document.getElementById('recent');
+  rc.innerHTML = recent.length ? '' : '<div class="hint" style="padding:12px">暂无流水记录</div>';
+  recent.forEach(function(r){
+    const d = document.createElement('div');
+    d.className = 'log-item';
+    const prod = products.find(function(p){ return p.id === r.pid; });
+    const unit = prod ? prod.unit : '磅';
+    d.innerHTML = '<span class="dot ' + r.type + '"></span>' +
+      '<div style="flex:1">' +
+        '<div style="font-weight:700">' + r.pname + ' <span class="hint">' + (r.type === 'in' ? '+' : '-') + r.qty + unit + '</span></div>' +
+        '<div class="hint">' + new Date(r.ts).toLocaleString('zh-CN') + ' · ' + r.op + ' · ' + (r.note || '—') + '</div>' +
+      '</div>' +
+      '<span class="pill ' + (r.type === 'in' ? 'pill-ok' : 'pill-danger') + '">' + (r.type === 'in' ? '入库' : '出库') + '</span>';
     rc.appendChild(d);
   });
-  const last30=Date.now()-30*86400000;
-  const out30=tx.filter(x=>x.type==='out' && x.ts>last30);
-  const by={}; out30.forEach(x=>by[x.pname]=(by[x.pname]||0)+x.qty);
-  const topO=Object.entries(by).sort((a,b)=>b[1]-a[1])[0];
-  document.getElementById('topSeller').textContent=topO? `${topO[0]} · ${topO[1].toFixed(1)}磅` : '暂无';
-  const in30=tx.filter(x=>x.type==='in' && x.ts>last30);
-  const byI={}; in30.forEach(x=>byI[x.pname]=(byI[x.pname]||0)+x.qty);
-  const topI=Object.entries(byI).sort((a,b)=>b[1]-a[1])[0];
-  document.getElementById('topRestock').textContent=topI? `${topI[0]} · ${topI[1].toFixed(1)}磅` : '暂无';
+
+  // 畅销与补货
+  const last30 = Date.now() - 30 * 86400000;
+  const out30 = tx.filter(function(x){ return x.type === 'out' && x.ts > last30; });
+  const by = {};
+  out30.forEach(function(x){ by[x.pname] = (by[x.pname] || 0) + x.qty; });
+  const topO = Object.entries(by).sort(function(a, b){ return b[1] - a[1]; })[0];
+  document.getElementById('topSeller').textContent = topO ? (topO[0] + ' · ' + topO[1].toFixed(1)) : '暂无数据';
+
+  const in30 = tx.filter(function(x){ return x.type === 'in' && x.ts > last30; });
+  const byI = {};
+  in30.forEach(function(x){ byI[x.pname] = (byI[x.pname] || 0) + x.qty; });
+  const topI = Object.entries(byI).sort(function(a, b){ return b[1] - a[1]; })[0];
+  document.getElementById('topRestock').textContent = topI ? (topI[0] + ' · ' + topI[1].toFixed(1)) : '暂无数据';
 }
-function quick(type,pid){
-  openModal(type,pid);
+
+function quick(type, pid){
+  openModal(type, pid);
 }
-function openModal(type,pid){
-  mode=type;
-  const m=document.getElementById('modal');
-  document.getElementById('mTitle').textContent= type==='in'?'入库':'出库';
-  document.getElementById('mHint').textContent= type==='in'?'增加库存':'扣减库存';
-  document.getElementById('mSubmit').textContent= type==='in'?'确认入库':'确认出库';
-  document.getElementById('mSubmit').className= 'btn '+(type==='in'?'btn-ok':'btn-warn');
-  if(pid) document.getElementById('mProduct').value=pid;
-  document.getElementById('mQty').value='';
-  document.getElementById('mNote').value='';
-  document.getElementById('mPrice').value='';
+
+function openModal(type, pid){
+  mode = type;
+  const m = document.getElementById('modal');
+  document.getElementById('mTitle').textContent = (type === 'in' ? '药材入库' : '药材出库');
+  document.getElementById('mHint').textContent = (type === 'in' ? '增加现有库存' : '扣减现有库存并记账');
+  document.getElementById('mSubmit').textContent = (type === 'in' ? '确认入库' : '确认出库');
+  document.getElementById('mSubmit').className = 'btn ' + (type === 'in' ? 'btn-ok' : 'btn-warn');
+  
+  if(pid) document.getElementById('mProduct').value = pid;
+  document.getElementById('mQty').value = '';
+  document.getElementById('mNote').value = '';
+  document.getElementById('mPrice').value = '';
   syncPriceHint();
   m.classList.add('open');
-  setTimeout(()=>document.getElementById('mQty').focus(),50);
+  setTimeout(function(){ document.getElementById('mQty').focus(); }, 50);
 }
-function closeModal(){document.getElementById('modal').classList.remove('open')}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+}
+
 function submitModal(){
-  const pid=document.getElementById('mProduct').value;
-  const qty=parseFloat(document.getElementById('mQty').value);
-  const price=parseFloat(document.getElementById('mPrice').value);
-  const op=document.getElementById('mOp').value.trim()||'店长';
-  const note=document.getElementById('mNote').value.trim();
-  const pr=products.find(p=>p.id===pid);
-  if(!pr) return alert('请选择药材');
-  if(!qty || qty<=0) return alert('请输入数量');
-  if(mode==='out' && qty>pr.stock) return alert(`库存不足：现存 ${pr.stock}${pr.unit}，无法出库 ${qty}${pr.unit}`);
-  const usePrice = isNaN(price)? pr.price : price;
-  const after = mode==='in'? pr.stock+qty : pr.stock-qty;
-  pr.stock= Math.round(after*10)/10;
+  const pid = document.getElementById('mProduct').value;
+  const qty = parseFloat(document.getElementById('mQty').value);
+  const price = parseFloat(document.getElementById('mPrice').value);
+  const op = document.getElementById('mOp').value.trim() || '店长';
+  const note = document.getElementById('mNote').value.trim();
+  const pr = products.find(function(p){ return p.id === pid; });
+  if(!pr) return alert('请选择有效药材');
+  if(!qty || qty <= 0) return alert('请输入有效的变动数量');
+  if(mode === 'out' && qty > pr.stock) return alert('库存不足警告：当前仅剩 ' + pr.stock + pr.unit + '，无法出库 ' + qty + pr.unit);
+  
+  const usePrice = isNaN(price) ? pr.price : price;
+  const after = (mode === 'in') ? (pr.stock + qty) : (pr.stock - qty);
+  pr.stock = Math.round(after * 10) / 10;
   saveProducts();
-  const rec={id:'t'+Date.now(),ts:Date.now(),type:mode,pid, pname:pr.name, qty, price:usePrice, total: Math.round(qty*usePrice*100)/100, after:pr.stock, op, note};
-  tx.push(rec); saveTx();
-  closeModal(); render(); renderHistory();
+  
+  const rec = {
+    id: 't' + Date.now(),
+    ts: Date.now(),
+    type: mode,
+    pid: pid,
+    pname: pr.name,
+    qty: qty,
+    price: usePrice,
+    total: Math.round(qty * usePrice * 100) / 100,
+    after: pr.stock,
+    op: op,
+    note: note
+  };
+  tx.push(rec);
+  saveTx();
+  closeModal();
+  render();
+  renderHistory();
 }
+
 function editStock(pid){
-  const pr=products.find(p=>p.id===pid);
-  const v=prompt(`手调库存 — ${pr.name}（当前 ${pr.stock}${pr.unit}）\n输入新库存数量：`, pr.stock);
-  if(v===null) return;
-  const n=parseFloat(v); if(isNaN(n)||n<0) return alert('无效数量');
-  const diff=n-pr.stock;
-  pr.stock=Math.round(n*10)/10; saveProducts();
-  if(diff!==0){
-    tx.push({id:'t'+Date.now(),ts:Date.now(),type: diff>0?'in':'out', pid, pname:pr.name, qty:Math.abs(diff), price:pr.price, total:Math.round(Math.abs(diff)*pr.price*100)/100, after:pr.stock, op:'店长', note:'手调库存'});
+  const pr = products.find(function(p){ return p.id === pid; });
+  const v = prompt('手调库存 — ' + pr.name + '（当前库存：' + pr.stock + ' ' + pr.unit + '）\n请输入调整后的新库存数量：', pr.stock);
+  if(v === null) return;
+  const n = parseFloat(v);
+  if(isNaN(n) || n < 0) return alert('请输入有效非负数量');
+  const diff = n - pr.stock;
+  pr.stock = Math.round(n * 10) / 10;
+  saveProducts();
+  if(diff !== 0){
+    tx.push({
+      id: 't' + Date.now(),
+      ts: Date.now(),
+      type: (diff > 0 ? 'in' : 'out'),
+      pid: pid,
+      pname: pr.name,
+      qty: Math.round(Math.abs(diff) * 10) / 10,
+      price: pr.price,
+      total: Math.round(Math.abs(diff) * pr.price * 100) / 100,
+      after: pr.stock,
+      op: '店长',
+      note: '人工手动校正库存'
+    });
     saveTx();
   }
-  render(); renderHistory();
+  render();
+  renderHistory();
 }
+
 function editLow(pid){
-  const pr=products.find(p=>p.id===pid);
-  const v=prompt(`设置低库存阈值 — ${pr.name}（当前 ${pr.low}${pr.unit}）`, pr.low);
-  if(v===null) return;
-  const n=parseFloat(v); if(isNaN(n)||n<0) return alert('无效阈值');
-  pr.low=n; saveProducts(); render();
+  const pr = products.find(function(p){ return p.id === pid; });
+  const v = prompt('设置预警阈值 — ' + pr.name + '（当前阈值：' + pr.low + ' ' + pr.unit + '）', pr.low);
+  if(v === null) return;
+  const n = parseFloat(v);
+  if(isNaN(n) || n < 0) return alert('请输入有效数字');
+  pr.low = n;
+  saveProducts();
+  render();
 }
+
 function renderHistory(){
-  const type=document.getElementById('hType').value;
-  const q=(document.getElementById('hQ').value||'').toLowerCase();
-  const d=document.getElementById('hDate').value;
-  let list=[...tx].sort((a,b)=>b.ts-a.ts);
-  if(type) list=list.filter(x=>x.type===type);
-  if(q) list=list.filter(x=>[x.pname,x.note,x.op].join(' ').toLowerCase().includes(q));
-  if(d){ const ds=new Date(d).toDateString(); list=list.filter(x=>new Date(x.ts).toDateString()===ds); }
-  const tb=document.getElementById('htbody'); tb.innerHTML='';
-  if(!list.length){ tb.innerHTML='<tr><td colspan="9" class="hint" style="text-align:center;padding:18px">无记录</td></tr>'; return}
-  list.forEach(r=>{
-    const tr=document.createElement('tr');
-    const dt=new Date(r.ts).toLocaleString('zh-CN');
-    tr.innerHTML=`<td>${dt}</td><td><span class="pill ${r.type==='in'?'pill-ok':'pill-danger'}">${r.type==='in'?'入库':'出库'}</span></td><td style="font-weight:700">${r.pname}</td><td>${r.type==='out'?'-':'+'}${r.qty}</td><td>${r.after}</td><td>$${r.price}</td><td>$${r.total}</td><td>${r.op}</td><td class="hint">${r.note||'—'}</td>`;
+  const type = document.getElementById('hType').value;
+  const q = (document.getElementById('hQ').value || '').toLowerCase();
+  const d = document.getElementById('hDate').value;
+  let list = [...tx].sort(function(a, b){ return b.ts - a.ts; });
+  if(type) list = list.filter(function(x){ return x.type === type; });
+  if(q) list = list.filter(function(x){ return [x.pname, x.note, x.op].join(' ').toLowerCase().includes(q); });
+  if(d){
+    const ds = new Date(d).toDateString();
+    list = list.filter(function(x){ return new Date(x.ts).toDateString() === ds; });
+  }
+  const tb = document.getElementById('htbody');
+  tb.innerHTML = '';
+  if(!list.length){
+    tb.innerHTML = '<tr><td colspan="9" class="hint" style="text-align:center;padding:16px">暂无符合条件的流水记录</td></tr>';
+    return;
+  }
+  list.forEach(function(r){
+    const tr = document.createElement('tr');
+    const dt = new Date(r.ts).toLocaleString('zh-CN');
+    tr.innerHTML = '<td>' + dt + '</td>' +
+      '<td><span class="pill ' + (r.type === 'in' ? 'pill-ok' : 'pill-danger') + '">' + (r.type === 'in' ? '入库' : '出库') + '</span></td>' +
+      '<td style="font-weight:700">' + r.pname + '</td>' +
+      '<td>' + (r.type === 'out' ? '-' : '+') + r.qty + '</td>' +
+      '<td style="font-weight:800">' + r.after + '</td>' +
+      '<td>$' + r.price + '</td>' +
+      '<td>$' + r.total + '</td>' +
+      '<td>' + r.op + '</td>' +
+      '<td class="hint">' + (r.note || '—') + '</td>';
     tb.appendChild(tr);
   });
 }
+
 function exportCSV(){
-  const header=['时间','类型','药材','数量','结存','单价','小计','操作人','备注'];
-  const rows=tx.map(r=>[new Date(r.ts).toLocaleString('zh-CN'), r.type==='in'?'入库':'出库', r.pname, r.qty, r.after, r.price, r.total, r.op, (r.note||'')]);
-  const csv=[header,...rows].map(a=>a.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='renxin_流水_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  const header = ['时间','类型','药材','数量','结存','单价','小计','经手人','备注'];
+  const rows = tx.map(function(r){
+    return [
+      new Date(r.ts).toLocaleString('zh-CN'),
+      r.type === 'in' ? '入库' : '出库',
+      r.pname,
+      r.qty,
+      r.after,
+      r.price,
+      r.total,
+      r.op,
+      r.note || ''
+    ];
+  });
+  const csv = [header, ...rows].map(function(a){ return a.map(function(v){ return '"' + String(v).replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], {type: 'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'renxin_流水_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
 }
+
 function exportJSON(){
-  const data={products, tx, exportedAt:new Date().toISOString()};
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='renxin_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+  const data = {products: products, tx: tx, exportedAt: new Date().toISOString()};
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'renxin_backup_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
 }
+
 function onImport(e){
-  const f=e.target.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=()=>{
-    try{
-      const d=JSON.parse(r.result);
-      if(d.products && d.tx){ products=d.products; tx=d.tx; saveProducts(); saveTx(); render(); renderHistory(); alert('导入成功');}
-      else alert('文件格式不对');
-    }catch(err){alert('解析失败：'+err.message)}
+  const f = e.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = function(){
+    try {
+      const d = JSON.parse(r.result);
+      if(d.products && d.tx){
+        products = d.products;
+        tx = d.tx;
+        saveProducts();
+        saveTx();
+        render();
+        renderHistory();
+        alert('数据恢复导入成功！');
+      } else {
+        alert('备份文件格式不符合规范');
+      }
+    } catch(err){
+      alert('解析失败：' + err.message);
+    }
   };
-  r.readAsText(f); e.target.value='';
+  r.readAsText(f);
+  e.target.value = '';
 }
-function clearHistory(){ if(!confirm('确定清空全部流水？库存不受影响。')) return; tx=[]; saveTx(); render(); renderHistory(); }
-function resetDemo(){ if(!confirm('重置为演示库存？会覆盖当前库存与流水。')) return; localStorage.removeItem(LS_P); localStorage.removeItem(LS_T); location.reload(); }
-function openHistory(){ document.getElementById('historyCard').scrollIntoView({behavior:'smooth'}); }
-init();
+
+function clearHistory(){
+  if(!confirm('确定清空全部流水明细？库存结存不会受到影响。')) return;
+  tx = [];
+  saveTx();
+  render();
+  renderHistory();
+}
+
+function resetDemo(){
+  if(!confirm('确定重置为 51 味道地药材盘点初始库存？')) return;
+  try { localStorage.clear(); } catch(e){}
+  location.reload();
+}
+
+function openHistory(){
+  document.getElementById('historyCard').scrollIntoView({behavior: 'smooth'});
+}
+
+// Initialize when DOM ready
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 </body>
 </html>
