@@ -359,8 +359,8 @@ td {
       </div>
 
       <div style="margin-bottom:12px">
-        <label style="font-weight:700;font-size:13px">输入操作密码（初始默认：8888）</label>
-        <input type="password" id="inputPin" class="input" placeholder="请输入店长密码" style="width:100%;margin-top:4px" onkeydown="if(event.key==='Enter') verifyAndUnlock()">
+        <label style="font-weight:700;font-size:13px">请输入店长操作密码</label>
+        <input type="password" id="inputPin" class="input" placeholder="请输入密码" style="width:100%;margin-top:4px" onkeydown="if(event.key==='Enter') verifyAndUnlock()">
       </div>
 
       <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:16px">
@@ -384,7 +384,7 @@ td {
     <div class="sheet-body">
       <div style="margin-bottom:10px">
         <label class="hint">当前旧密码</label>
-        <input type="password" id="oldPin" class="input" style="width:100%;margin-top:4px" placeholder="默认初始为 8888">
+        <input type="password" id="oldPin" class="input" style="width:100%;margin-top:4px" placeholder="请输入当前旧密码">
       </div>
       <div style="margin-bottom:10px">
         <label class="hint">新密码</label>
@@ -1028,13 +1028,16 @@ const DEFAULT_PRODUCTS = [
 ];
 
 const LS_P = 'renxin_products_v4', LS_T = 'renxin_tx_v4';
-const LS_PIN = 'renxin_store_pin_v1';
-const LS_SESSION = 'renxin_auth_session_v1';
+const LS_PIN_HASH = 'renxin_store_pinhash_v2';
+const LS_SESSION = 'renxin_auth_session_v2';
+
+// 初始密码哈希（SHA-256 加密存储，无任何明文）
+const DEFAULT_PIN_HASH = '2926a2731f4b312c08982cacf8061eb14bf65c1a87cc5d70e864e079c6220731';
 
 let products = [], tx = [];
 let mode = 'in';
 let isAuthorized = false;
-let storePin = '8888'; // 默认初始店长密码
+let storePinHash = DEFAULT_PIN_HASH;
 
 // Supabase 云端配置
 const supaUrl = 'https://ahruaqzjhragymgcgenk.supabase.co';
@@ -1042,6 +1045,19 @@ const supaKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsIn
 
 let isSyncing = false;
 let autoSyncTimer = null;
+
+async function hashPin(str){
+  try {
+    if(window.crypto && crypto.subtle){
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2, '0'); }).join('');
+    }
+  } catch(e){ }
+  // Fallback simple hash
+  let h = 0;
+  for(let i=0; i<str.length; i++){ h = (Math.imul(31, h) + str.charCodeAt(i)) | 0; }
+  return 'simple_' + h;
+}
 
 function safeGet(k){
   try { return localStorage.getItem(k); } catch(e){ return null; }
@@ -1054,10 +1070,10 @@ function safeRemove(k){
 }
 
 function loadAuth(){
-  const savedPin = safeGet(LS_PIN);
-  if(savedPin) storePin = savedPin;
+  const savedHash = safeGet(LS_PIN_HASH);
+  if(savedHash) storePinHash = savedHash;
   const sess = safeGet(LS_SESSION);
-  if(sess === 'unlocked_' + storePin){
+  if(sess === 'unlocked_' + storePinHash){
     isAuthorized = true;
   } else {
     isAuthorized = false;
@@ -1109,17 +1125,18 @@ function closeAuthModal(){
   if(m) m.classList.remove('open');
 }
 
-function verifyAndUnlock(){
+async function verifyAndUnlock(){
   const el = document.getElementById('inputPin');
   const val = el ? (el.value || '').trim() : '';
-  if(val === storePin){
+  const h = await hashPin(val);
+  if(h === storePinHash){
     isAuthorized = true;
-    safeSet(LS_SESSION, 'unlocked_' + storePin);
+    safeSet(LS_SESSION, 'unlocked_' + storePinHash);
     updateAuthUI();
     closeAuthModal();
     alert('🎉 密码验证成功！已解锁店长出入库与修改权限。');
   } else {
-    alert('❌ 密码错误！请重新输入（默认初始密码：8888）');
+    alert('❌ 密码错误！请重新输入');
     if(el){
       el.value = '';
       el.focus();
@@ -1142,24 +1159,25 @@ function closeChangePinModal(){
   if(m) m.classList.remove('open');
 }
 
-function saveNewPin(){
+async function saveNewPin(){
   const o = document.getElementById('oldPin');
   const n = document.getElementById('newPin');
   const oldVal = o ? (o.value || '').trim() : '';
   const newVal = n ? (n.value || '').trim() : '';
-  if(oldVal !== storePin){
+  const oldH = await hashPin(oldVal);
+  if(oldH !== storePinHash){
     return alert('旧密码错误，无法修改！');
   }
   if(!newVal || newVal.length < 4){
     return alert('新密码至少需要 4 位字符！');
   }
-  storePin = newVal;
-  safeSet(LS_PIN, storePin);
-  safeSet(LS_SESSION, 'unlocked_' + storePin);
+  storePinHash = await hashPin(newVal);
+  safeSet(LS_PIN_HASH, storePinHash);
+  safeSet(LS_SESSION, 'unlocked_' + storePinHash);
   isAuthorized = true;
   updateAuthUI();
   closeChangePinModal();
-  alert('✅ 店长操作密码修改成功！新密码为：' + storePin);
+  alert('✅ 店长操作密码修改成功！');
 }
 
 // 权限拦截入口
