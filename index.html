@@ -392,7 +392,7 @@ td {
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
         <button class="btn btn-ghost" onclick="closeChangePinModal()">取消</button>
-        <button class="btn btn-primary" onclick="saveNewPin()">确认修改</button>
+        <button class="btn btn-primary" onclick="saveNewPin()">确认修改并同步全网</button>
       </div>
     </div>
   </div>
@@ -450,7 +450,7 @@ td {
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:10px;margin-bottom:14px;font-size:13px;line-height:1.5">
         <strong style="color:#15803d">✅ Supabase 云端数据库已连接！</strong><br>
         项目地址：<code style="background:#fff;padding:2px 4px;border-radius:4px;font-size:11px">https://ahruaqzjhragymgcgenk.supabase.co</code><br>
-        全店手机/电脑均已实现双向实时云端同步。
+        全店手机/电脑均已实现双向实时云端同步与密码云端强校验。
       </div>
 
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
@@ -1031,7 +1031,7 @@ const LS_P = 'renxin_products_v4', LS_T = 'renxin_tx_v4';
 const LS_PIN_HASH = 'renxin_store_pinhash_v2';
 const LS_SESSION = 'renxin_auth_session_v2';
 
-// 初始密码哈希（SHA-256 加密存储，无任何明文）
+// 初始默认密码哈希（SHA-256 加密存储）
 const DEFAULT_PIN_HASH = '2926a2731f4b312c08982cacf8061eb14bf65c1a87cc5d70e864e079c6220731';
 
 let products = [], tx = [];
@@ -1053,7 +1053,6 @@ async function hashPin(str){
       return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2, '0'); }).join('');
     }
   } catch(e){ }
-  // Fallback simple hash
   let h = 0;
   for(let i=0; i<str.length; i++){ h = (Math.imul(31, h) + str.charCodeAt(i)) | 0; }
   return 'simple_' + h;
@@ -1177,7 +1176,10 @@ async function saveNewPin(){
   isAuthorized = true;
   updateAuthUI();
   closeChangePinModal();
-  alert('✅ 店长操作密码修改成功！');
+  
+  // 关键：立即将新密码哈希推送到云端 Supabase，使所有手机立即生效
+  await pushToCloud();
+  alert('✅ 店长操作密码修改成功！新密码已同步至云端，所有设备立即生效。');
 }
 
 // 权限拦截入口
@@ -1213,7 +1215,11 @@ async function pushToCloud(){
     const url = supaUrl.replace(/\/+$/, '') + '/rest/v1/inventory_data';
     const payload = [{
       id: 'renxin_master',
-      data: { products: products, tx: tx },
+      data: {
+        products: products,
+        tx: tx,
+        pinHash: storePinHash // 云端同步密码哈希
+      },
       updated_at: new Date().toISOString()
     }];
     
@@ -1251,6 +1257,22 @@ async function pullFromCloud(force){
       const rows = await res.json();
       if(Array.isArray(rows) && rows.length > 0 && rows[0].data){
         const d = rows[0].data;
+        
+        // 1. 同步云端密码哈希：如果云端更新了密码，立即同步并更新当前设备授权
+        if(d.pinHash && typeof d.pinHash === 'string'){
+          if(storePinHash !== d.pinHash){
+            storePinHash = d.pinHash;
+            safeSet(LS_PIN_HASH, storePinHash);
+            const sess = safeGet(LS_SESSION);
+            if(sess !== 'unlocked_' + storePinHash){
+              isAuthorized = false;
+              safeRemove(LS_SESSION);
+              updateAuthUI();
+            }
+          }
+        }
+        
+        // 2. 同步药材与流水
         if(Array.isArray(d.products) && d.products.length >= 19){
           products = d.products;
           if(Array.isArray(d.tx)) tx = d.tx;
