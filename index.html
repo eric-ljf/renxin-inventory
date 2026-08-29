@@ -450,7 +450,7 @@ td {
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:10px;margin-bottom:14px;font-size:13px;line-height:1.5">
         <strong style="color:#15803d">✅ Supabase 云端数据库已连接！</strong><br>
         项目地址：<code style="background:#fff;padding:2px 4px;border-radius:4px;font-size:11px">https://ahruaqzjhragymgcgenk.supabase.co</code><br>
-        全店手机/电脑均已实现双向实时云端同步与密码云端强校验。
+        全店所有手机/电脑均已实现自动实时云端同步与店长密码强校验。
       </div>
 
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
@@ -1028,11 +1028,11 @@ const DEFAULT_PRODUCTS = [
 ];
 
 const LS_P = 'renxin_products_v4', LS_T = 'renxin_tx_v4';
-const LS_PIN_HASH = 'renxin_store_pinhash_v2';
-const LS_SESSION = 'renxin_auth_session_v2';
+const LS_PIN_HASH = 'renxin_store_pinhash_v4';
+const LS_SESSION = 'renxin_auth_session_v4';
 
-// 初始默认密码哈希（SHA-256 加密存储）
-const DEFAULT_PIN_HASH = '2926a2731f4b312c08982cacf8061eb14bf65c1a87cc5d70e864e079c6220731';
+// 初始默认密码 0711 的 SHA-256 哈希值
+const DEFAULT_PIN_HASH = 'b3cddf7a103bb3a88721cb2c7d2b7cb8833b7a95d0a5dc00f3e28e02a99be5b7';
 
 let products = [], tx = [];
 let mode = 'in';
@@ -1177,9 +1177,8 @@ async function saveNewPin(){
   updateAuthUI();
   closeChangePinModal();
   
-  // 关键：立即将新密码哈希推送到云端 Supabase，使所有手机立即生效
   await pushToCloud();
-  alert('✅ 店长操作密码修改成功！新密码已同步至云端，所有设备立即生效。');
+  alert('✅ 店长操作密码修改成功！所有设备即刻生效。');
 }
 
 // 权限拦截入口
@@ -1218,7 +1217,7 @@ async function pushToCloud(){
       data: {
         products: products,
         tx: tx,
-        pinHash: storePinHash // 云端同步密码哈希
+        pinHash: storePinHash
       },
       updated_at: new Date().toISOString()
     }];
@@ -1258,7 +1257,7 @@ async function pullFromCloud(force){
       if(Array.isArray(rows) && rows.length > 0 && rows[0].data){
         const d = rows[0].data;
         
-        // 1. 同步云端密码哈希：如果云端更新了密码，立即同步并更新当前设备授权
+        // 1. 同步云端密码哈希
         if(d.pinHash && typeof d.pinHash === 'string'){
           if(storePinHash !== d.pinHash){
             storePinHash = d.pinHash;
