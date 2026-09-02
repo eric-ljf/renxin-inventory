@@ -261,7 +261,7 @@ td {
     <div class="logo">仁心</div>
     <div>
       <h1>仁心养生行 · 出入库管理</h1>
-      <small>现货 · 免硫 · 欢迎自取 — 51味精选道地药材台账</small>
+      <small>现货 · 免硫 · 欢迎自取 — 61味精选道地药材台账</small>
     </div>
     <div class="spacer"></div>
     <span class="badge" id="todayBadge"></span>
@@ -285,8 +285,8 @@ td {
 
 <div class="wrap">
   <div class="stats">
-    <div class="card stat"><div class="k">总 SKU</div><div class="v" id="sSku">51</div><div class="sub">在售药材种类</div></div>
-    <div class="card stat"><div class="k">总库存量</div><div class="v" id="sStock">—</div><div class="sub" id="sStockSub">51 SKU 实盘合计</div></div>
+    <div class="card stat"><div class="k">总 SKU</div><div class="v" id="sSku">61</div><div class="sub">在售药材种类</div></div>
+    <div class="card stat"><div class="k">总库存量</div><div class="v" id="sStock">—</div><div class="sub" id="sStockSub">61 SKU 实盘合计</div></div>
     <div class="card stat"><div class="k">低库存预警</div><div class="v" id="sLow" style="color:var(--warn)">—</div><div class="sub">阈值预警项</div></div>
     <div class="card stat"><div class="k">今日流水</div><div class="v" id="sToday">—</div><div class="sub" id="sTodaySub">入库 / 出库</div></div>
   </div>
@@ -1024,6 +1024,116 @@ const DEFAULT_PRODUCTS = [
     "benefit": "健脾渗湿、除痹止泻、清热排脓",
     "stock": 3.0,
     "low": 5
+  },
+  {
+    "id": "p52",
+    "name": "锁阳",
+    "price": 18,
+    "unit": "磅",
+    "category": "补肾助阳",
+    "tag": "内蒙野生",
+    "benefit": "补肾助阳、益精血、润肠通便",
+    "stock": 2.0,
+    "low": 2
+  },
+  {
+    "id": "p53",
+    "name": "巴戟天",
+    "price": 22,
+    "unit": "磅",
+    "category": "补肾助阳",
+    "tag": "广东德庆",
+    "benefit": "补肾助阳、强筋壮骨、祛风除湿",
+    "stock": 2.0,
+    "low": 2
+  },
+  {
+    "id": "p54",
+    "name": "杜仲",
+    "price": 18,
+    "unit": "磅",
+    "category": "补肾强腰",
+    "tag": "老树厚皮",
+    "benefit": "补肝肾、强筋骨、安胎元",
+    "stock": 2.0,
+    "low": 2
+  },
+  {
+    "id": "p55",
+    "name": "川芎片",
+    "price": 15,
+    "unit": "磅",
+    "category": "活血调经",
+    "tag": "道地川芎",
+    "benefit": "活血行气、祛风止痛",
+    "stock": 2.0,
+    "low": 2
+  },
+  {
+    "id": "p56",
+    "name": "大白术",
+    "price": 16,
+    "unit": "磅",
+    "category": "健脾祛湿",
+    "tag": "个大质实",
+    "benefit": "健脾益气、燥湿利水、止汗安胎",
+    "stock": 3.0,
+    "low": 3
+  },
+  {
+    "id": "p57",
+    "name": "肉桂",
+    "price": 14,
+    "unit": "磅",
+    "category": "温里散寒",
+    "tag": "广西玉林",
+    "benefit": "补火助阳、散寒止痛、温通经脉",
+    "stock": 1.0,
+    "low": 2
+  },
+  {
+    "id": "p58",
+    "name": "炙甘草",
+    "price": 12,
+    "unit": "磅",
+    "category": "补气养血",
+    "tag": "蜜制调和",
+    "benefit": "补脾和胃、益气复脉、调和诸药",
+    "stock": 1.0,
+    "low": 2
+  },
+  {
+    "id": "p59",
+    "name": "春砂仁",
+    "price": 32,
+    "unit": "磅",
+    "category": "理气健脾",
+    "tag": "阳春正宗",
+    "benefit": "化湿开胃、温脾止泻、理气安胎",
+    "stock": 1.0,
+    "low": 1
+  },
+  {
+    "id": "p60",
+    "name": "红枣",
+    "price": 8,
+    "unit": "磅",
+    "category": "补血安神",
+    "tag": "若羌灰枣",
+    "benefit": "补中益气、养血安神、缓和药性",
+    "stock": 5.0,
+    "low": 3
+  },
+  {
+    "id": "p61",
+    "name": "雪梨干",
+    "price": 12,
+    "unit": "磅",
+    "category": "润肺生津",
+    "tag": "煲汤佳品",
+    "benefit": "润肺止咳、生津止渴、清热化痰",
+    "stock": 2.0,
+    "low": 2
   }
 ];
 
@@ -1274,6 +1384,16 @@ async function pullFromCloud(force){
         // 2. 同步药材与流水
         if(Array.isArray(d.products) && d.products.length >= 19){
           products = d.products;
+          // 云端清单落后于本地默认台账时，补齐新增药材（不覆盖云端已有库存）
+          DEFAULT_PRODUCTS.forEach(function(dp){
+            const exists = products.some(function(x){ return x.id === dp.id || x.name === dp.name; });
+            if(!exists){
+              products.push(Object.assign({}, dp, {
+                stock: (typeof dp.stock === 'number') ? dp.stock : 0,
+                low: dp.low || 5
+              }));
+            }
+          });
           if(Array.isArray(d.tx)) tx = d.tx;
           saveProducts();
           saveTx();
@@ -1301,7 +1421,8 @@ function load(){
     try { products = JSON.parse(p); } catch(e){ products = []; }
   }
   
-  if(!Array.isArray(products) || products.length < DEFAULT_PRODUCTS.length){
+  if(!Array.isArray(products) || products.length < 1){
+    // 首次使用：载入默认台账
     products = DEFAULT_PRODUCTS.map(function(pr){
       return Object.assign({}, pr, {
         stock: (typeof pr.stock === 'number') ? pr.stock : 0,
@@ -1316,6 +1437,20 @@ function load(){
       {id:'t3', ts:now-86400000*1, type:'in', pid:'p47', pname:'原果大号罗汉果', qty:30, price:1.5, total:45, after:30, op:'店长', note:'手写单盘点初始入库'}
     ];
     saveTx();
+  } else {
+    // 版本升级补齐：本地已保存清单缺少新增药材时，仅追加缺失项，保留现有库存与流水
+    let added = false;
+    DEFAULT_PRODUCTS.forEach(function(dp){
+      const exists = products.some(function(x){ return x.id === dp.id || x.name === dp.name; });
+      if(!exists){
+        products.push(Object.assign({}, dp, {
+          stock: (typeof dp.stock === 'number') ? dp.stock : 0,
+          low: dp.low || 5
+        }));
+        added = true;
+      }
+    });
+    if(added) saveProducts();
   }
   if(t){
     try { tx = JSON.parse(t); } catch(e){ tx = []; }
@@ -1742,7 +1877,7 @@ function clearHistory(){
 
 function resetDemo(){
   requireAuth(function(){
-    if(!confirm('确定重置为 51 味道地药材盘点初始库存？')) return;
+    if(!confirm('确定重置为 61 味道地药材盘点初始库存？')) return;
     try { localStorage.clear(); } catch(e){}
     location.reload();
   });
